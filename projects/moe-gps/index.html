@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MoE-GPS: Guidlines for Prediction Strategy for Dynamic Expert Duplication in MoE Load Balancing | Zhixu Du</title>
+<meta name="description" content="MoE-GPS (NeurIPS 2025 Workshop (ML for Systems)): In multi-GPU Mixture-of-Experts (MoE) inference, skewed token-to-expert routing overloads some GPUs. This paper studies prefill under tensor paralleli...">
+<link rel="canonical" href="https://zhixudu.github.io/projects/moe-gps/">
+<meta name="citation_title" content="MoE-GPS: Guidlines for Prediction Strategy for Dynamic Expert Duplication in MoE Load Balancing">
+<meta name="citation_author" content="Ma, Haiyue">
+<meta name="citation_author" content="Du, Zhixu">
+<meta name="citation_author" content="Chen, Yiran">
+<meta name="citation_publication_date" content="2025">
+<meta name="citation_online_date" content="2025/06/09">
+<meta name="citation_conference_title" content="NeurIPS 2025 Workshop on ML for Systems">
+<meta name="citation_arxiv_id" content="2506.07366">
+<meta name="citation_abstract_html_url" content="https://zhixudu.github.io/projects/moe-gps/">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "ScholarlyArticle", "headline": "MoE-GPS: Guidlines for Prediction Strategy for Dynamic Expert Duplication in MoE Load Balancing", "name": "MoE-GPS: Guidlines for Prediction Strategy for Dynamic Expert Duplication in MoE Load Balancing", "author": [{"@type": "Person", "name": "Haiyue Ma"}, {"@type": "Person", "name": "Zhixu Du"}, {"@type": "Person", "name": "Yiran Chen"}], "datePublished": "2025", "abstract": "In multi-GPU Mixture-of-Experts (MoE) network, experts are distributed across different GPUs, which creates load imbalance as each expert processes different number of tokens. Recent works improve MoE inference load balance by dynamically duplicating popular experts to more GPUs to process excessive tokens, which requires predicting the distribution before routing. In this paper, we discuss the tradeoff of prediction strategies, accuracies, overhead, and end-to-end system performance. We propose MoE-GPS, a framework that guides the selection of the optimal predictor design under various system configurations, by quantifying the performance impact to system-level model runtime. Specifically, we advocate for Distribution-Only Prediction, a prediction strategy that only predicts overall token distribution which significantly reduces overhead compared to the traditional Token-to-Expert Prediction. On Mixtral 8x7B MMLU dataset, MoE-GPS suggests Distribution-Only Prediction which improves end-to-end inference performance by more than 23% compared with Token-to-Expert Prediction.", "keywords": ["Choosing expert load predictors for MoE inference", "Distribution-only prediction of expert load", "Accuracy vs overhead of token-to-expert routing predictors", "Interconnect bandwidth decides the prediction strategy", "Routing skewness metric and its effect on prediction", "Expert routing skew across MMLU, AlpacaEval, SST2", "Greedy expert duplication and placement algorithm", "Modeling prediction error impact on runtime", "Simulating MoE expert parallelism with LLMCompass", "Lightweight neural predictors of expert routing", "Load imbalance in MoE prefill under TP plus EP", "Hiding expert weight transfer behind attention", "Generalization to Llama-MoE and Switch Transformer", "Prefill latency breakdown of Mixtral 8x7B", "Positioning among expert duplication systems"], "url": "https://zhixudu.github.io/projects/moe-gps/", "sameAs": ["https://arxiv.org/abs/2506.07366"], "isPartOf": {"@type": "PublicationEvent", "name": "NeurIPS 2025 Workshop on ML for Systems"}}</script>
+<link rel="alternate" type="text/markdown" href="https://zhixudu.github.io/projects/moe-gps/index.md">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=IBM+Plex+Sans:wght@500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+/* Layout: single reading column, publication list as ruled entries, venue as a small stamp. */
+:root{
+  --paper:#f7f6f2;--ink:#1b1d22;--muted:#5d6068;--rule:#dcdad3;--card:#ffffff;--accent:#1f4e79;
+  --serif:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#15171b;--ink:#e7e6e1;--muted:#a3a5ab;--rule:#2b2e34;--card:#1c1f24;--accent:#8fb8e0;color-scheme:dark}}
+:root[data-theme="dark"]{--paper:#15171b;--ink:#e7e6e1;--muted:#a3a5ab;--rule:#2b2e34;--card:#1c1f24;--accent:#8fb8e0;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.65 var(--serif)}
+main{max-width:44rem;margin:0 auto;padding-inline:1.25rem;padding-block:2.5rem 4rem}
+a{color:var(--accent);text-underline-offset:2px}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1{font-size:1.85rem;line-height:1.25;margin:0;text-wrap:balance;font-weight:600}
+h2{font:600 .78rem var(--sans);text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin:2.4rem 0 .8rem;padding-top:.8rem;border-top:1px solid var(--rule)}
+h3{font:600 1rem var(--sans);margin:1.2rem 0 .2rem}
+p{max-width:65ch}
+.meta,.small{color:var(--muted);font-size:.92rem}
+.venue{display:inline-block;font:600 .74rem var(--sans);letter-spacing:.04em;color:var(--accent);border:1px solid currentColor;border-radius:3px;padding:.05rem .45rem}
+.links{display:flex;flex-wrap:wrap;gap:.3rem 1rem;font:500 .88rem var(--sans)}
+.head{display:grid;gap:.6rem;margin-bottom:.4rem}
+.pub{display:grid;gap:.3rem;padding-block:1.1rem;border-bottom:1px solid var(--rule)}
+.pub .t{font-weight:600;line-height:1.35}
+.pub .t a{color:var(--ink);text-decoration:none}
+.pub .t a:hover{color:var(--accent)}
+pre{background:var(--card);border:1px solid var(--rule);padding:1rem;overflow-x:auto;font:.78rem/1.5 var(--mono)}
+nav{display:flex;gap:1rem;font:500 .88rem var(--sans);margin-bottom:2rem}
+nav a{text-decoration:none}
+details{margin-top:2.4rem;padding-top:.8rem;border-top:1px solid var(--rule)}
+summary{cursor:pointer;font:600 .78rem var(--sans);text-transform:uppercase;letter-spacing:.09em;color:var(--muted)}
+summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+</style>
+</head>
+<body>
+<main>
+<nav><a href="https://zhixudu.github.io/">&larr; Zhixu Du</a><a href="https://zhixudu.github.io/#publications">Publications</a></nav>
+<div class="head"><div><span class="venue">NeurIPS 2025 Workshop (ML for Systems)</span></div>
+<h1>MoE-GPS: Guidlines for Prediction Strategy for Dynamic Expert Duplication in MoE Load Balancing</h1>
+<div class="meta">Haiyue Ma, <strong>Zhixu Du</strong>, Yiran Chen</div>
+<div class="links"><a href="https://arxiv.org/abs/2506.07366">arXiv</a> <a href="https://arxiv.org/pdf/2506.07366">PDF</a> <a href="https://openreview.net/forum?id=VCh5vBSxxb">OpenReview</a> <a href="citation.bib">BibTeX</a></div></div>
+<h2>Extended abstract</h2>
+<p>In multi-GPU Mixture-of-Experts (MoE) inference, skewed token-to-expert routing overloads some GPUs. This paper studies prefill under tensor parallelism for attention and expert parallelism for FFN layers, leaving routing unchanged and treating decode balancing as secondary. It defines skewness as the token count of the most popular expert divided by the average per expert, and shows that FFN time scales with skewness and all-to-all communication with (N-1)·skewness/N^2 for N GPUs. Dynamic expert duplication, as in MoE-Prediction, Prophet, FlexMoE, SE-MoE and FasterMoE, replicates popular experts but must predict load before routing.</p>
+<p>MoE-GPS is a framework that selects the prediction strategy minimizing end-to-end latency for a given model and hardware setup, summarized as a decision flow on whether communication is the bottleneck and whether imbalance is high. It extends the LLMCompass architectural simulator with expert-parallel communication, Mixtral support (grouped query attention, SwiGLU, sliding-window attention) and predictors of tunable accuracy and overhead. A greedy algorithm copies the most-used expert from the most-loaded to the least-loaded GPU, under memory and copy limits, until loads differ by at most one token. Prediction error maps to runtime through optimistic, typical ((1+ε) times average load) and pessimistic (N(1+ε)) cases; misrouting always adds communication.</p>
+<p>Distribution-Only Prediction fits a per-layer multinomial by maximum likelihood offline, adding no runtime overhead and balancing FFN compute but not communication. On Mixtral 8x7B at sequence length 512, average skewness is 1.388 on MMLU, 1.402 on AlpacaEval and 1.990 on SST2, with estimation error rates of 1.80%, 0.98% and 16.00%. Token-to-Expert Prediction lets tokens skip the scatter step, saving FFN compute and communication; predictors range from global-frequency and token- or position-conditioned frequency models to a two-layer MLP and an LSTM with sparse attention. The accuracy-overhead tradeoff gives a U-shaped latency curve with its optimum at intermediate accuracy; higher skewness makes accuracy cheaper.</p>
+<p>Simulated single-layer Mixtral 8x7B prefill on four A100 GPUs (batch size 1, sequence length 512), connected by NVLink 3.0 (2 TB/s) or PCIe 4.0 (32 GB/s), shows communication dominating under PCIe. Distribution-Only Prediction is fastest in most cases; at skewness 1.4, close to MMLU, it is 23% faster than the best Token-to-Expert configuration. Token-to-Expert Prediction pays off when skewness is high and communication costly, as with PCIe. Llama-MoE and Switch Transformer show similar trends, higher skewness, and prediction cost growing exponentially toward perfect accuracy.</p>
+<p>Moving one FP16 Mixtral 8x7B expert takes about 0.1 ms over NVLink 3.0, less than attention runtime at batch 1 and sequence 512; over PCIe 4.0 the transfer can be hidden at modest workloads such as batch 16 and sequence 2K. For long sequences, MLP predictors hit an accuracy floor and LSTMs parallelize poorly, favoring Distribution-Only Prediction. Simulated prediction-to-inference overhead ratios match real GPU measurements.</p>
+<details><summary>Original abstract (arXiv)</summary>
+<p>In multi-GPU Mixture-of-Experts (MoE) network, experts are distributed across different GPUs, which creates load imbalance as each expert processes different number of tokens. Recent works improve MoE inference load balance by dynamically duplicating popular experts to more GPUs to process excessive tokens, which requires predicting the distribution before routing. In this paper, we discuss the tradeoff of prediction strategies, accuracies, overhead, and end-to-end system performance. We propose MoE-GPS, a framework that guides the selection of the optimal predictor design under various system configurations, by quantifying the performance impact to system-level model runtime. Specifically, we advocate for Distribution-Only Prediction, a prediction strategy that only predicts overall token distribution which significantly reduces overhead compared to the traditional Token-to-Expert Prediction. On Mixtral 8x7B MMLU dataset, MoE-GPS suggests Distribution-Only Prediction which improves end-to-end inference performance by more than 23% compared with Token-to-Expert Prediction.</p>
+</details>
+<details><summary>Research topics this paper covers (15)</summary>
+<h3>Choosing expert load predictors for MoE inference</h3>
+<p>If you design dynamic expert duplication for multi-GPU MoE inference, this paper gives MoE-GPS, a framework that picks the prediction strategy (distribution-only vs token-to-expert, and at what accuracy) that minimizes simulated end-to-end latency for a given model and hardware setup, summarized as a two-question decision flow (Figure 1, Section 4).</p>
+<h3>Distribution-only prediction of expert load</h3>
+<p>If you predict MoE expert popularity, this paper proposes predicting only the aggregate token share per expert (a per-layer multinomial fit by MLE, computed offline with no runtime overhead) and shows it gives a 23% speedup over the best token-to-expert predictor at skewness 1.4 on Mixtral 8x7B (Section 3.2.1, Section 4, Appendix A).</p>
+<h3>Accuracy vs overhead of token-to-expert routing predictors</h3>
+<p>If you train predictors of which expert each token will be routed to, this paper shows the accuracy-overhead tradeoff gives a U-shaped end-to-end latency curve, so the best predictor sits at intermediate accuracy rather than the most accurate one (Figure 4, Figure 6b/6d).</p>
+<h3>Interconnect bandwidth decides the prediction strategy</h3>
+<p>If you serve MoE models over PCIe or NVLink, this paper finds token-to-expert prediction pays off mainly when communication dominates (e.g., PCIe 4.0), because it lets tokens skip the scatter step, while distribution-only prediction is preferred when communication is not the bottleneck (Figure 6, Figure 7, Section 4 takeaways).</p>
+<h3>Routing skewness metric and its effect on prediction</h3>
+<p>If you measure MoE load imbalance, this paper defines skewness as tokens on the most popular expert divided by the average per expert, shows FFN compute and communication time scale with it, and finds higher skewness makes token-level prediction cheaper but distribution estimates less accurate (Section 2, Table 1, Section 4).</p>
+<h3>Expert routing skew across MMLU, AlpacaEval, SST2</h3>
+<p>If you want empirical expert activation statistics, this paper measures Mixtral 8x7B average skewness of 1.388 (MMLU), 1.402 (AlpacaEval) and 1.990 (SST2) at sequence length 512, with distribution-estimation error rates of 1.80%, 0.98% and 16.00% (Section 3.2.1, Table 1).</p>
+<h3>Greedy expert duplication and placement algorithm</h3>
+<p>If you implement expert replication for load balancing, this paper gives an iterative algorithm that copies the most-used expert from the most-loaded GPU to the least-loaded one under memory and maximum-copy limits and reassigns tokens until per-GPU loads differ by at most one (Algorithm 1, Section 3.1).</p>
+<h3>Modeling prediction error impact on runtime</h3>
+<p>If you need to translate predictor error into system slowdown, this paper models optimistic, typical (bottleneck GPU at (1+e) times average) and pessimistic (N(1+e)) error placement for FFN compute, and notes misrouting always adds communication (Figure 5, Section 3.3).</p>
+<h3>Simulating MoE expert parallelism with LLMCompass</h3>
+<p>If you evaluate MoE serving designs without a real cluster, this paper extends the LLMCompass architectural simulator with expert parallelism communication, Mixtral support (GQA, SwiGLU, sliding-window attention) and tunable predictor accuracy/overhead, and simulates single-layer prefill latency on four A100s (Section 3.4).</p>
+<h3>Lightweight neural predictors of expert routing</h3>
+<p>If you build expert routing predictors, this paper compares a global-frequency baseline, token- or position-conditioned frequency models, a small 2-layer MLP and an LSTM with sparse attention trained on token embeddings with per-layer heads, and notes MLP predictors hit an accuracy floor at long sequences while LSTMs parallelize poorly (Section 3.2.2, Appendix B, Section 5).</p>
+<h3>Load imbalance in MoE prefill under TP plus EP</h3>
+<p>If you study MoE inference parallelism, this paper analyzes prefill with tensor parallelism for attention and expert parallelism for FFN, showing per-GPU communication grows as (N-1)·skewness/N^2 and FFN time scales with skewness, and argues decode load balancing is secondary (Section 2, Figure 2).</p>
+<h3>Hiding expert weight transfer behind attention</h3>
+<p>If you worry about the cost of moving duplicated experts, this paper estimates one Mixtral 8x7B FP16 expert transfer takes about 0.1 ms over NVLink 3.0, smaller than attention runtime at batch 1 and sequence 512, and that over PCIe 4.0 it can be hidden with modest workloads such as batch 16 and sequence 2K (Section 5).</p>
+<h3>Generalization to Llama-MoE and Switch Transformer</h3>
+<p>If you use MoE models other than Mixtral, this paper repeats the simulations on Llama-MoE and Switch Transformer with the same datasets and hardware, finding similar trends, higher skewness, and prediction cost that grows exponentially as accuracy approaches perfect (Appendix C, Figures 8 and 9, Section 5).</p>
+<h3>Prefill latency breakdown of Mixtral 8x7B</h3>
+<p>If you profile MoE layers, this paper breaks simulated single-layer Mixtral 8x7B prefill latency into attention, attention communication, FFN, FFN communication and predictor overhead across skewness levels, showing communication dominates under PCIe (Figure 6a/6c).</p>
+<h3>Positioning among expert duplication systems</h3>
+<p>If you survey MoE load balancing work, this paper situates prediction-driven duplication relative to MoE-Prediction, Prophet, FlexMoE, SE-MoE and FasterMoE, training-time auxiliary loss and expert biasing, and expert offloading approaches, treating the latter as orthogonal (Section 2, Section 3.1).</p>
+<h3>Questions this paper answers</h3>
+<ul><li>How should I decide whether to predict per-token expert routing or just the expert load distribution for MoE serving?</li><li>Is there a framework that selects the best expert prediction strategy for MoE load balancing given the GPU interconnect?</li><li>Can I balance MoE experts across GPUs using only predicted expert frequencies instead of per-token routing predictions?</li><li>How accurate is a multinomial MLE estimate of expert activation frequencies across datasets?</li><li>Does a more accurate MoE expert routing predictor always speed up inference once you count its overhead?</li><li>What is the optimal accuracy for a token-to-expert predictor used for expert placement?</li><li>How does PCIe vs NVLink bandwidth change the best MoE load balancing strategy?</li><li>When does reducing all-to-all communication matter more than balancing FFN compute in expert parallel inference?</li><li>How do I quantify expert load imbalance in MoE inference and relate it to latency?</li><li>Does a more skewed expert distribution make expert routing easier or harder to predict?</li><li>How imbalanced is Mixtral 8x7B expert routing on different datasets?</li><li>Is expert activation distribution stable between train and test splits for MoE models?</li><li>What is a simple algorithm to replicate hot experts across GPUs to equalize token load?</li><li>How do I compute expert placement and token dispatch given a predicted token-to-expert map?</li><li>How do expert routing misprediction errors translate into load imbalance latency on multi-GPU systems?</li><li>Worst-case vs average-case model of predictor error for MoE expert placement</li><li>Is there a simulator for MoE inference latency with expert parallelism and load imbalance?</li><li>How can I estimate MoE prefill time-to-first-token across interconnects without GPU cluster access?</li><li>What model architectures can predict which MoE expert a token will be routed to?</li><li>Can token ID or position alone predict expert selection in Mixtral?</li><li>Why does expert parallelism cause load imbalance in MoE prefill and how does it affect all-to-all communication?</li><li>Analytical model of all-to-all communication cost under skewed expert routing</li><li>Is per-batch dynamic expert replication too expensive due to weight movement?</li><li>Can expert weight migration be overlapped with attention computation in MoE inference?</li><li>Do expert load balancing insights from Mixtral transfer to Switch Transformer or Llama-MoE?</li><li>How hard is it to predict expert routing at high accuracy for different MoE models?</li><li>What fraction of MoE layer latency is communication vs FFN compute on A100 with PCIe vs NVLink?</li><li>Per-component latency breakdown for Mixtral prefill on 4 GPUs</li><li>What existing systems dynamically replicate popular experts for MoE load balancing?</li><li>Difference between training-time MoE load balancing losses and inference-time expert duplication</li></ul>
+</details>
+<details><summary>Citation (BibTeX)</summary>
+<pre>@inproceedings{ma2025moe,
+  title     = {MoE-GPS: Guidlines for Prediction Strategy for Dynamic Expert Duplication in MoE Load Balancing},
+  author    = {Ma, Haiyue and Du, Zhixu and Chen, Yiran},
+  booktitle = {NeurIPS 2025 Workshop on ML for Systems},
+  year      = {2025},
+  url       = {https://arxiv.org/abs/2506.07366}
+}
+</pre>
+</details>
+<p class="small">Page ID: zdu-html-a65ce9</p>
+
+</main>
+</body>
+</html>

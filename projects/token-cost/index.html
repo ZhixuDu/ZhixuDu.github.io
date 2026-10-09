@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>What Does a Token Cost? A Mixture-of-Agents Measurement of Sufficient Per-Token Compute | Zhixu Du</title>
+<meta name="description" content="Token cost (MoA) (Under review): This paper asks how much computation each generated token requires. Large language models spend the same computation on every token, and speculative d...">
+<link rel="canonical" href="https://zhixudu.github.io/projects/token-cost/">
+<meta name="citation_title" content="What Does a Token Cost? A Mixture-of-Agents Measurement of Sufficient Per-Token Compute">
+<meta name="citation_author" content="Du, Zhixu">
+<meta name="citation_author" content="Han, Weijia">
+<meta name="citation_author" content="Li, Hai">
+<meta name="citation_author" content="Chen, Yiran">
+<meta name="citation_publication_date" content="2026">
+<meta name="citation_online_date" content="2026/10/01">
+<meta name="citation_technical_report_institution" content="arXiv">
+<meta name="citation_technical_report_number" content="arXiv:2610.02491">
+<meta name="citation_arxiv_id" content="2610.02491">
+<meta name="citation_abstract_html_url" content="https://zhixudu.github.io/projects/token-cost/">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "ScholarlyArticle", "headline": "What Does a Token Cost? A Mixture-of-Agents Measurement of Sufficient Per-Token Compute", "name": "What Does a Token Cost? A Mixture-of-Agents Measurement of Sufficient Per-Token Compute", "author": [{"@type": "Person", "name": "Zhixu Du"}, {"@type": "Person", "name": "Weijia Han"}, {"@type": "Person", "name": "Hai (Helen) Li"}, {"@type": "Person", "name": "Yiran Chen"}], "datePublished": "2026", "abstract": "Large language models spend the same amount of computation on every token they generate, regardless of how difficult each token is to produce. Methods such as speculative decoding and model routing are built on the premise that much of this computation is unnecessary, yet the computation an individual token actually requires has not been measured. We measure it through a Mixture-of-Agents (MoA) lens: a panel of fifteen language models of increasing capacity, drawn from three families, in which every agent attempts to reproduce a reference sequence token by token, conditioned on the correct preceding tokens. We define the inference cost of the smallest agent that succeeds as the token's sufficient compute, which upper-bounds what the token requires. On three core benchmarks, a 0.5B agent reproduces 92--95\\% of reference tokens. Across Qwen, OLMo, and R1-distilled panels, the most expensive 10\\% account for 64--80\\% of estimated FLOPs. On all 500 MATH-500 problems, the MoA-derived map helps model routing reduce projected latency from 7.59 to 5.12 seconds while slightly improving accuracy, relative to the best confidence-routing baseline. The MoA-map helps drafting use 32.6\\% fewer draft tokens and approximately 20\\% lower projected latency than fixed-window drafting at similar accuracy. These comparisons reveal remaining allocation headroom, motivating controllers that exploit sufficient-compute structure.", "keywords": ["Measuring per-token compute requirements of LLMs", "Token-level mixture-of-agents as decision process", "Upper-bound semantics of reference reproduction cost", "Small models reproduce most reference tokens", "Heavy-tailed concentration of per-token compute", "Cost conventions for unresolved tokens and Gini", "Shared token difficulty ordering across model families", "Robustness checks on cross-family agreement", "Reproduction difficulty versus speculative acceptance signals", "Surface features poorly predict expensive tokens", "Teacher-forced agreement versus free-running continuation", "Mid-solution handover by capacity and start point", "Oracle token routing versus confidence cascades", "Choosing speculative draft length from agreement maps", "Architecture-derived FLOP accounting for decoding", "Latency projection from published throughput benchmarks", "Agreement with learned layer-skipping allocations", "Verified-response corpus across twelve benchmarks"], "url": "https://zhixudu.github.io/projects/token-cost/", "sameAs": ["https://arxiv.org/abs/2610.02491"], "isPartOf": {"@type": "CreativeWork", "name": "Under review"}}</script>
+<link rel="alternate" type="text/markdown" href="https://zhixudu.github.io/projects/token-cost/index.md">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=IBM+Plex+Sans:wght@500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+/* Layout: single reading column, publication list as ruled entries, venue as a small stamp. */
+:root{
+  --paper:#f7f6f2;--ink:#1b1d22;--muted:#5d6068;--rule:#dcdad3;--card:#ffffff;--accent:#1f4e79;
+  --serif:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#15171b;--ink:#e7e6e1;--muted:#a3a5ab;--rule:#2b2e34;--card:#1c1f24;--accent:#8fb8e0;color-scheme:dark}}
+:root[data-theme="dark"]{--paper:#15171b;--ink:#e7e6e1;--muted:#a3a5ab;--rule:#2b2e34;--card:#1c1f24;--accent:#8fb8e0;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.65 var(--serif)}
+main{max-width:44rem;margin:0 auto;padding-inline:1.25rem;padding-block:2.5rem 4rem}
+a{color:var(--accent);text-underline-offset:2px}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1{font-size:1.85rem;line-height:1.25;margin:0;text-wrap:balance;font-weight:600}
+h2{font:600 .78rem var(--sans);text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin:2.4rem 0 .8rem;padding-top:.8rem;border-top:1px solid var(--rule)}
+h3{font:600 1rem var(--sans);margin:1.2rem 0 .2rem}
+p{max-width:65ch}
+.meta,.small{color:var(--muted);font-size:.92rem}
+.venue{display:inline-block;font:600 .74rem var(--sans);letter-spacing:.04em;color:var(--accent);border:1px solid currentColor;border-radius:3px;padding:.05rem .45rem}
+.links{display:flex;flex-wrap:wrap;gap:.3rem 1rem;font:500 .88rem var(--sans)}
+.head{display:grid;gap:.6rem;margin-bottom:.4rem}
+.pub{display:grid;gap:.3rem;padding-block:1.1rem;border-bottom:1px solid var(--rule)}
+.pub .t{font-weight:600;line-height:1.35}
+.pub .t a{color:var(--ink);text-decoration:none}
+.pub .t a:hover{color:var(--accent)}
+pre{background:var(--card);border:1px solid var(--rule);padding:1rem;overflow-x:auto;font:.78rem/1.5 var(--mono)}
+nav{display:flex;gap:1rem;font:500 .88rem var(--sans);margin-bottom:2rem}
+nav a{text-decoration:none}
+details{margin-top:2.4rem;padding-top:.8rem;border-top:1px solid var(--rule)}
+summary{cursor:pointer;font:600 .78rem var(--sans);text-transform:uppercase;letter-spacing:.09em;color:var(--muted)}
+summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+</style>
+</head>
+<body>
+<main>
+<nav><a href="https://zhixudu.github.io/">&larr; Zhixu Du</a><a href="https://zhixudu.github.io/#publications">Publications</a></nav>
+<div class="head"><div><span class="venue">Under review</span></div>
+<h1>What Does a Token Cost? A Mixture-of-Agents Measurement of Sufficient Per-Token Compute</h1>
+<div class="meta"><strong>Zhixu Du</strong>, Weijia Han, Hai (Helen) Li, Yiran Chen</div>
+<div class="links"><a href="https://arxiv.org/abs/2610.02491">arXiv</a> <a href="https://arxiv.org/pdf/2610.02491">PDF</a> <a href="citation.bib">BibTeX</a></div></div>
+<h2>Extended abstract</h2>
+<p>This paper asks how much computation each generated token requires. Large language models spend the same computation on every token, and speculative decoding, routing, and adaptive-depth methods assume much of it is unnecessary, yet per-token requirements have not been measured. The paper measures them through a token-level Mixture-of-Agents (MoA) lens: fifteen models from Qwen2.5, OLMo-2, and DeepSeek-R1-Distill-Qwen each try to reproduce a checker-verified reference token by token, conditioned on the correct preceding tokens, and the architecture-derived FLOPs of the cheapest agent that succeeds define the token&#x27;s sufficient compute, which upper-bounds what the token requires. Casting token-level MoA as a Markov decision process, the paper shows that the minimum-cost selector for a fixed reference picks the cheapest matching agent at each position, so the summed map is the minimum reproduction cost and bounds the cost of any correct response.</p>
+<p>On GSM8K, MATH-500, and HumanEval, a 0.5B agent reproduces 92-95% of reference tokens, and across the Qwen, OLMo, and R1-distilled panels the most expensive 10% of tokens account for 64-80% of estimated FLOPs. Allocation remains uneven when unresolved tokens are excluded rather than priced at twice the largest model&#x27;s cost, with resolved-only Gini coefficients from 0.218 to 0.547. Families also share an ordering of expensive positions: after controlling for surprisal and position, partial Spearman correlations among Qwen2.5, OLMo-2, and Falcon3 range from 0.322 to 0.398 on Qwen-written and 0.417 to 0.475 on Llama-written references. The association is positive on all twelve benchmarks (50,019 prompts across math, code, question answering, knowledge, and commonsense), moves by less than 0.05 under alternative success criteria, a second verified response, memorization screening, and GSM-Symbolic, reaches 0.520 on text from a Qwen3-30B-A3B mixture-of-experts generator, and exceeds greedy or soft speculative-rejection signals (0.15-0.38). Digits, operators, word length, frequency, and position explain only 2.5-3.2% of ranked variance, and reproduction indices correlate 0.209 to 0.213 with FlexiDepth&#x27;s learned layer allocations.</p>
+<p>Cheap reproduction does not ensure reliable continuation. When a 0.5B model generates from a verified midpoint before Qwen-72B resumes, the accuracy gap grows from -0.09 points at one token to -9.44 points at 64 tokens, against -1.50 points for a 7B model. Completing the whole suffix costs the 0.5B model 54.08 points from the prompt and 37.64 from the midpoint, and reference cost weakly predicts handover loss (Spearman 0.195).</p>
+<p>On all 500 MATH-500 problems, the oracle map of 0.5B agreement with a 72B reference helps routing reach 69.6% accuracy at a projected 5.12 seconds, compared with 68.4% and 7.59 seconds for the best confidence-routing baseline. Setting draft lengths from runs of matching positions uses 32.6% fewer draft tokens than a fixed 16-token window with similar accepted tokens, and about 20% lower projected latency (3.99 versus 4.98 seconds) at similar accuracy; the reduction ranges from 8.3% to 24.7% across 36 timing scenarios. Latencies are projected from published Qwen2.5 vLLM benchmarks, and a logical FLOP ledger shows drafting spending more FLOPs than the 72B model alone. These comparisons reveal remaining allocation headroom, motivating controllers that exploit sufficient-compute structure without advance reference access.</p>
+<details><summary>Original abstract (arXiv)</summary>
+<p>Large language models spend the same amount of computation on every token they generate, regardless of how difficult each token is to produce. Methods such as speculative decoding and model routing are built on the premise that much of this computation is unnecessary, yet the computation an individual token actually requires has not been measured. We measure it through a Mixture-of-Agents (MoA) lens: a panel of fifteen language models of increasing capacity, drawn from three families, in which every agent attempts to reproduce a reference sequence token by token, conditioned on the correct preceding tokens. We define the inference cost of the smallest agent that succeeds as the token&#x27;s sufficient compute, which upper-bounds what the token requires. On three core benchmarks, a 0.5B agent reproduces 92--95\% of reference tokens. Across Qwen, OLMo, and R1-distilled panels, the most expensive 10\% account for 64--80\% of estimated FLOPs. On all 500 MATH-500 problems, the MoA-derived map helps model routing reduce projected latency from 7.59 to 5.12 seconds while slightly improving accuracy, relative to the best confidence-routing baseline. The MoA-map helps drafting use 32.6\% fewer draft tokens and approximately 20\% lower projected latency than fixed-window drafting at similar accuracy. These comparisons reveal remaining allocation headroom, motivating controllers that exploit sufficient-compute structure.</p>
+</details>
+<details><summary>Research topics this paper covers (18)</summary>
+<h3>Measuring per-token compute requirements of LLMs</h3>
+<p>If you work on adaptive or efficient inference, this paper defines a token&#x27;s sufficient compute as the FLOPs of the cheapest panel model whose prediction reproduces that token given the correct prefix, giving an observed upper bound on what the token requires (Section 2, Definition 1).</p>
+<h3>Token-level mixture-of-agents as decision process</h3>
+<p>If you study model selection during decoding, this paper casts token-level mixture-of-agents as a Markov decision process under a compute budget and shows via a Bellman recursion that, along a fixed verified reference, the minimum-cost controller simply picks the cheapest matching agent at each position (Section 3, Eqs. 3-9, Algorithm 1).</p>
+<h3>Upper-bound semantics of reference reproduction cost</h3>
+<p>If you need formal guarantees for oracle compute measurements, this paper proves that summed per-token sufficient compute equals the minimum cost over selectors that reproduce a reference exactly and upper-bounds the cost of producing any correct response, and gives a local witness bound for larger model classes (Appendix B.2, Eq. 15).</p>
+<h3>Small models reproduce most reference tokens</h3>
+<p>If you work on small/large model collaboration, this paper finds that Qwen2.5-0.5B reproduces 91.9-95.2% of Qwen-72B reference tokens on GSM8K, MATH-500, and HumanEval, with OLMo-2 1B and R1-Distill-Qwen 1.5B at 89.34-91.74% and 89.80-92.27% (Section 4.1, Figures 1 and 3).</p>
+<h3>Heavy-tailed concentration of per-token compute</h3>
+<p>If you study where inference compute is spent, this paper shows the most expensive 10% of tokens account for 63.66-79.54% of estimated FLOPs in the Qwen panel, 63.75-69.37% in OLMo, and 67.19-74.76% in R1-Distill-Qwen, with the top 1% reaching 52.94-60.14% for Qwen (Section 4.1, Figure 3).</p>
+<h3>Cost conventions for unresolved tokens and Gini</h3>
+<p>If you worry that concentration results depend on how unmatched tokens are priced, this paper reports resolved-only top-10% shares of 51-60% (Qwen2.5), 40-44% (OLMo-2), and 26-32% (R1-Distill-Qwen) and resolved-only Gini coefficients from 0.218 to 0.547, with unresolved rates of 0.14-8.72% (Appendix C.1, Tables A5 and A6).</p>
+<h3>Shared token difficulty ordering across model families</h3>
+<p>If you study whether token difficulty is model-specific or shared, this paper finds that Qwen2.5, OLMo-2, and Falcon3 agree on which word positions need larger models, with partial Spearman correlations of 0.322-0.398 on Qwen-written and 0.417-0.475 on Llama-written references after controlling for surprisal and position (Section 4.1, Table 1).</p>
+<h3>Robustness checks on cross-family agreement</h3>
+<p>If you want to know whether shared difficulty survives confounds, this paper shows the association is positive on all twelve benchmarks and moves by less than 0.05 under extra controls, top-five and p&gt;=0.5 criteria, a second verified response, memorization screening (33 of 1,758 items flagged), and GSM-Symbolic, and reaches 0.520 on Qwen3-30B-A3B MoE-generated text (Section 4.1, Appendix C.2, Tables A3 and A4).</p>
+<h3>Reproduction difficulty versus speculative acceptance signals</h3>
+<p>If you work on speculative decoding acceptance, this paper compares its reproduction indices with greedy and soft rejection proxies between each family&#x27;s smallest and largest models and finds the reproduction ordering more shared across families (0.322/0.417 versus 0.150/0.199 greedy and 0.179/0.384 soft) (Section 4.1, Appendix C.2).</p>
+<h3>Surface features poorly predict expensive tokens</h3>
+<p>If you hope simple lexical cues identify hard tokens, this paper finds longer words weakly associated with higher reproduction demand and digits and operators weakly negative, with regressions on digit/operator indicators, word length, frequency, and position explaining only 2.5-3.2% of ranked variance (Section 6, Appendix C.2).</p>
+<h3>Teacher-forced agreement versus free-running continuation</h3>
+<p>If you study exposure bias or small-model handoffs, this paper shows that cheap reproduction under the correct prefix does not ensure reliable continuation: letting 0.5B generate before Qwen-72B resumes moves accuracy from -0.09 pp at one token to -9.44 pp at 64 tokens, and reference cost predicts handover loss only weakly (Spearman 0.195) (Section 4.2, Figure 4a, Table A8, Appendix D).</p>
+<h3>Mid-solution handover by capacity and start point</h3>
+<p>If you work on model relay or partial-solution handoff, this paper measures accuracy when 0.5B to 32B models complete a verified prefix from character fractions 0 to 0.9: 0.5B loses 54.08 points from the prompt and 37.64 from the midpoint, while 7B loses 1.50 points after 64 delegated tokens and 32B stays near zero (Section 4.2, Figure 4b, Table A9).</p>
+<h3>Oracle token routing versus confidence cascades</h3>
+<p>If you build token-level routers or cascades, this paper gives a routing controller oracle access to positions where 0.5B matches a 72B reference on all 500 MATH-500 problems, reaching 69.6% accuracy at 5.12 projected seconds versus 68.4% and 7.59 seconds for the best confidence-threshold cascade (theta = 0.99) (Section 4.3, Figure 5a, Tables A10 and A11).</p>
+<h3>Choosing speculative draft length from agreement maps</h3>
+<p>If you tune draft length in speculative decoding, this paper sets each draft block to the run of positions where 0.5B matches the 72B reference, proposing 301,691 versus 447,731 draft tokens (32.6% fewer) with similar accepted tokens and lowering projected latency from 4.98 to 3.99 seconds at 69.4% versus 69.0% accuracy (Section 4.3, Figure 5b, Appendix E.1).</p>
+<h3>Architecture-derived FLOP accounting for decoding</h3>
+<p>If you need a per-token FLOP model for dense and MoE transformers, this paper counts attention, projection, gated feed-forward, router, and vocabulary matrix multiplications with prefix-dependent attention cost, and its ledger shows drafting policies using more logical FLOPs (112.07 TFLOPs for map drafting, 154.30 for fixed) than 72B alone (101.92) despite lower projected latency (Appendix B.1, Table A10).</p>
+<h3>Latency projection from published throughput benchmarks</h3>
+<p>If you need latency estimates without a production deployment, this paper fits per-call and per-position costs to official Qwen2.5 vLLM A100 benchmarks (maximum relative error 2.13%) and tests 36 timing scenarios, under which map drafting stays faster than fixed-window and adaptive drafting by 8.3-24.7% and 7.3-18.4% (Appendix E.2).</p>
+<h3>Agreement with learned layer-skipping allocations</h3>
+<p>If you study adaptive-depth methods, this paper compares its reproduction indices with FlexiDepth&#x27;s learned layer allocations on 600 generations, finding pooled partial correlations of 0.209 (Qwen panel) and 0.213 (OLMo panel), ranging from 0.061 on copy to 0.405 on product tasks (Appendix C.3, Table A7).</p>
+<h3>Verified-response corpus across twelve benchmarks</h3>
+<p>If you need a checker-verified token-level dataset across domains, this paper builds references from Qwen2.5-72B and Llama-3.3-70B on twelve benchmarks with 50,019 prompts spanning GSM8K, MATH-500, HumanEval, LiveCodeBench, MBPP+, AIME 2024, ARC-Challenge, BBH, MMLU, MMLU-Pro, HellaSwag, and NQ-Open, scored against Qwen2.5, OLMo-2, R1-Distill-Qwen, and Falcon3 panels (Section 4, Appendix A, Tables A1 and A2).</p>
+<h3>Questions this paper answers</h3>
+<ul><li>How much computation does each individual token in an LLM response actually need?</li><li>Is there a way to measure which generated tokens could have been produced by a much smaller model?</li><li>How can choosing among several LLMs at each decoding step be formulated as an MDP?</li><li>What is the optimal per-token model selector when the target output is known in advance?</li><li>Does the cost of reproducing one correct answer bound the cost of producing any correct answer?</li><li>What assumptions make greedy per-token model selection cost-optimal?</li><li>What fraction of a large model&#x27;s output tokens can a 0.5B model predict correctly under teacher forcing?</li><li>How often do small and large LLMs agree on the next token in math and code responses?</li><li>Is the compute needed for LLM generation concentrated in a few hard tokens?</li><li>What share of FLOPs do the hardest 10% of tokens require?</li><li>How sensitive are token compute concentration measurements to tokens no model in the panel can reproduce?</li><li>What Gini coefficient describes the inequality of per-token compute in LLM outputs?</li><li>Do different LLM families find the same tokens hard to predict?</li><li>Is per-token difficulty in generated text consistent across model families beyond surprisal?</li><li>Is cross-model agreement on hard tokens explained by memorization or benchmark contamination?</li><li>Does shared token difficulty hold across math, code, QA, and commonsense benchmarks?</li><li>Is small-versus-large model disagreement a good proxy for token difficulty across families?</li><li>How consistent are speculative decoding rejection positions across different model families?</li><li>Can token type, such as numbers or punctuation, predict which tokens need a larger model?</li><li>Which lexical features explain per-token compute demand in LLM reasoning text?</li><li>If a small model agrees with a large model token by token, can it safely generate several tokens on its own?</li><li>How quickly does accuracy degrade when a small LLM takes over generation for a few tokens?</li><li>How much accuracy does a small model lose when it finishes a reasoning chain started by a large model?</li><li>Does handing over later in a solution reduce the accuracy cost of switching to a smaller model?</li><li>How much headroom is left in confidence-based small/large token routing?</li><li>What would an oracle router that knows token agreement achieve on MATH-500?</li><li>How much speedup is left if speculative decoding knew the ideal draft length per block?</li><li>Do fixed-window drafts waste many rejected tokens compared with an oracle draft length?</li><li>How do you count per-token inference FLOPs for a transformer with a KV cache?</li><li>Why can speculative decoding lower latency while increasing total FLOPs?</li><li>How can one project LLM decoding latency from published tokens-per-second benchmarks?</li><li>How sensitive are speculative decoding speedup estimates to timing assumptions?</li><li>Do layer-skipping models spend more depth on the tokens that need larger models?</li><li>How does learned adaptive depth relate to cross-model token difficulty?</li><li>Is there a study scoring many model sizes against verified responses on math, code, and QA benchmarks?</li><li>How do reasoning-distilled models compare with their base family on token-level reproduction?</li></ul>
+</details>
+<details><summary>Citation (BibTeX)</summary>
+<pre>@misc{du2026token,
+  title         = {What Does a Token Cost? A Mixture-of-Agents Measurement of Sufficient Per-Token Compute},
+  author        = {Du, Zhixu and Han, Weijia and Li, Hai and Chen, Yiran},
+  year          = {2026},
+  eprint        = {2610.02491},
+  archivePrefix = {arXiv},
+  url           = {https://arxiv.org/abs/2610.02491}
+}
+</pre>
+</details>
+<p class="small">Page ID: zdu-html-a65ce9</p>
+
+</main>
+</body>
+</html>

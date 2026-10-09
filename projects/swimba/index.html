@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Swimba: Switch Mamba Model Scales State Space Models | Zhixu Du</title>
+<meta name="description" content="Swimba (NeurIPS 2026): Mixture-of-experts (MoE) is usually applied to feed-forward blocks, with a few methods such as SwitchHead and Mixture-of-Attention-Heads routing insid...">
+<link rel="canonical" href="https://zhixudu.github.io/projects/swimba/">
+<meta name="citation_title" content="Swimba: Switch Mamba Model Scales State Space Models">
+<meta name="citation_author" content="Du, Zhixu">
+<meta name="citation_author" content="Chitty-Venkata, Krishna Teja">
+<meta name="citation_author" content="Emani, Murali">
+<meta name="citation_author" content="Vishwanath, Venkatram">
+<meta name="citation_author" content="Li, Hai">
+<meta name="citation_author" content="Chen, Yiran">
+<meta name="citation_publication_date" content="2026">
+<meta name="citation_online_date" content="2026/03/06">
+<meta name="citation_conference_title" content="Advances in Neural Information Processing Systems 39 (NeurIPS 2026)">
+<meta name="citation_arxiv_id" content="2603.06938">
+<meta name="citation_abstract_html_url" content="https://zhixudu.github.io/projects/swimba/">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "ScholarlyArticle", "headline": "Swimba: Switch Mamba Model Scales State Space Models", "name": "Swimba: Switch Mamba Model Scales State Space Models", "author": [{"@type": "Person", "name": "Zhixu Du"}, {"@type": "Person", "name": "Krishna Teja Chitty-Venkata"}, {"@type": "Person", "name": "Murali Emani"}, {"@type": "Person", "name": "Venkatram Vishwanath"}, {"@type": "Person", "name": "Hai (Helen) Li"}, {"@type": "Person", "name": "Yiran Chen"}], "datePublished": "2026", "abstract": "Mixture-of-experts (MoE) is a common approach for increasing parameter capacity, but applying MoE to state space model (SSM) token mixers can multiply the cost of the recurrent state update. We study how to introduce expert specialization into selective SSMs while preserving computational efficiency. We show that MoE--SSM can refer to two designs: (1) MoE over separated SSMs, which maintains multiple state trajectories and thus scales compute with the number of experts; and (2) MoE-parameterized SSM, which mixes experts in parameter space, maintains a single state trajectory, and evaluates the recurrence once. Our method, Switch Mamba (Swimba), follows the second design by routing over expert-produced SSM streams. Theoretically, we establish well-definedness and stability for MoE-parameterized SSMs and characterize the relationship between the two designs. Empirically, we evaluate Swimba on standard benchmark tasks and measure real-time throughput and latency. Under matched FLOPs, Swimba achieves slightly better average performance than the baseline, with a small slowdown in real-time latency and throughput. Overall, these results suggest that parameter-space MoE can increase SSM capacity while keeping the dominant recurrence cost fixed.", "keywords": ["Mixture-of-experts inside SSM token mixers", "Taxonomy of MoE-SSM designs", "Single recurrence cost independent of expert count", "Parameter-space mixing preserves SSD structure", "Stability of expert switching in recurrences", "When mixed and separated expert SSMs coincide", "Expressivity gain from routed linear projections", "Shared transition, expert-specific B, C and X", "Upcycling a pretrained hybrid Mamba-Transformer", "Matched-FLOPs accuracy on LM benchmarks", "Per-token FLOPs of top-1 MoE SSM layers", "vLLM serving cost of MoE-SSM models", "FLOPs versus wall-clock gap from routing", "Positioning against MoE-Mamba, BlackMamba, Jamba, Routing Mamba", "MoE for token mixing beyond attention", "Link to switching state-space models"], "url": "https://zhixudu.github.io/projects/swimba/", "sameAs": ["https://arxiv.org/abs/2603.06938"], "isPartOf": {"@type": "PublicationEvent", "name": "Advances in Neural Information Processing Systems 39 (NeurIPS 2026)"}}</script>
+<link rel="alternate" type="text/markdown" href="https://zhixudu.github.io/projects/swimba/index.md">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=IBM+Plex+Sans:wght@500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+/* Layout: single reading column, publication list as ruled entries, venue as a small stamp. */
+:root{
+  --paper:#f7f6f2;--ink:#1b1d22;--muted:#5d6068;--rule:#dcdad3;--card:#ffffff;--accent:#1f4e79;
+  --serif:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#15171b;--ink:#e7e6e1;--muted:#a3a5ab;--rule:#2b2e34;--card:#1c1f24;--accent:#8fb8e0;color-scheme:dark}}
+:root[data-theme="dark"]{--paper:#15171b;--ink:#e7e6e1;--muted:#a3a5ab;--rule:#2b2e34;--card:#1c1f24;--accent:#8fb8e0;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.65 var(--serif)}
+main{max-width:44rem;margin:0 auto;padding-inline:1.25rem;padding-block:2.5rem 4rem}
+a{color:var(--accent);text-underline-offset:2px}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1{font-size:1.85rem;line-height:1.25;margin:0;text-wrap:balance;font-weight:600}
+h2{font:600 .78rem var(--sans);text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin:2.4rem 0 .8rem;padding-top:.8rem;border-top:1px solid var(--rule)}
+h3{font:600 1rem var(--sans);margin:1.2rem 0 .2rem}
+p{max-width:65ch}
+.meta,.small{color:var(--muted);font-size:.92rem}
+.venue{display:inline-block;font:600 .74rem var(--sans);letter-spacing:.04em;color:var(--accent);border:1px solid currentColor;border-radius:3px;padding:.05rem .45rem}
+.links{display:flex;flex-wrap:wrap;gap:.3rem 1rem;font:500 .88rem var(--sans)}
+.head{display:grid;gap:.6rem;margin-bottom:.4rem}
+.pub{display:grid;gap:.3rem;padding-block:1.1rem;border-bottom:1px solid var(--rule)}
+.pub .t{font-weight:600;line-height:1.35}
+.pub .t a{color:var(--ink);text-decoration:none}
+.pub .t a:hover{color:var(--accent)}
+pre{background:var(--card);border:1px solid var(--rule);padding:1rem;overflow-x:auto;font:.78rem/1.5 var(--mono)}
+nav{display:flex;gap:1rem;font:500 .88rem var(--sans);margin-bottom:2rem}
+nav a{text-decoration:none}
+details{margin-top:2.4rem;padding-top:.8rem;border-top:1px solid var(--rule)}
+summary{cursor:pointer;font:600 .78rem var(--sans);text-transform:uppercase;letter-spacing:.09em;color:var(--muted)}
+summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+</style>
+</head>
+<body>
+<main>
+<nav><a href="https://zhixudu.github.io/">&larr; Zhixu Du</a><a href="https://zhixudu.github.io/#publications">Publications</a></nav>
+<div class="head"><div><span class="venue">NeurIPS 2026</span></div>
+<h1>Swimba: Switch Mamba Model Scales State Space Models</h1>
+<div class="meta"><strong>Zhixu Du</strong>, Krishna Teja Chitty-Venkata, Murali Emani, Venkatram Vishwanath, Hai (Helen) Li, Yiran Chen</div>
+<div class="links"><a href="https://arxiv.org/abs/2603.06938">arXiv</a> <a href="https://arxiv.org/pdf/2603.06938">PDF</a> <a href="citation.bib">BibTeX</a></div></div>
+<h2>Extended abstract</h2>
+<p>Mixture-of-experts (MoE) is usually applied to feed-forward blocks, with a few methods such as SwitchHead and Mixture-of-Attention-Heads routing inside attention. This paper puts expert specialization inside the token mixer of selective state space models (SSMs) such as Mamba-2, keeping O(L) mixing cost without multiplying the dominant cost of the recurrent state update. It separates two designs that prior work conflates. MoE over separated SSMs keeps one state trajectory per expert, as in classical switching state-space models, so compute and state storage grow with the number of experts. MoE-parameterized SSM mixes experts in parameter space and evaluates a single recurrence. Hybrids such as BlackMamba, MoE-Mamba, Jamba, Zamba and Nemotron-H instead interleave dense SSM mixers with MoE MLPs, and Routing Mamba applies MoE to projections around the SSM core without this distinction.</p>
+<p>Switch Mamba (Swimba) replaces the Mamba-2 in-projection with expert in-projections and a token-level softmax router. Experts produce the injection and readout streams (B, C, X), the transition A is shared across experts and time, and routing-weighted streams are summed into one input to the unchanged SSD kernel.</p>
+<p>Five theorems support the design. The mixed layer is exactly one selective SSM with state size N, independent of the number of experts and of top-k sparsity. Its cost is O(T C_step + T C_mix) versus O(T E C_step) for separated experts. With a contractive transition (norm of A at most rho &lt; 1) and bounded mixed streams, the layer is BIBO stable under token-wise expert switching. Mixed and separated models coincide when routing is time-invariant and readout shared; otherwise their output gap follows a stable recursion driven by each expert&#x27;s deviation from the mixture injection. With linear expert projections and softmax routing, the layer strictly contains single-expert layers: two experts realize the logistic sigmoid, which a single-expert layer (a polynomial of degree at most 3 in this setting) cannot.</p>
+<p>Swimba-14B replaces every Mamba-2 layer of the 52-layer Nemotron-H-8B hybrid with a 4-expert, top-1 Swimba layer, initializes from its checkpoint, freezes the backbone, and trains only experts and routers by supervised fine-tuning on the Llama-Nemotron Post-Training Dataset. Across ARC-Challenge, ARC-Easy, BoolQ, HellaSwag, MMLU, OpenBookQA, PIQA, RTE and WinoGrande, average accuracy rises from 69.47 to 70.81 (normalized 70.98 to 72.34), with MMLU 71.7 to 75.0, while BoolQ and OpenBookQA dip slightly.</p>
+<p>PyTorch profiling gives 1.51282e10 versus 1.51263e10 FLOPs per token, under 0.2% apart. In vLLM decoding on one 40GB A100 over batch sizes 1 to 64 and input-output lengths 256 to 2048, Swimba-14B is slightly slower, with as low as a 10% slowdown, a gap the paper attributes to routing overhead; adding experts at fixed active count should leave throughput and latency largely unchanged.</p>
+<details><summary>Original abstract (arXiv)</summary>
+<p>Mixture-of-experts (MoE) is a common approach for increasing parameter capacity, but applying MoE to state space model (SSM) token mixers can multiply the cost of the recurrent state update. We study how to introduce expert specialization into selective SSMs while preserving computational efficiency. We show that MoE--SSM can refer to two designs: (1) MoE over separated SSMs, which maintains multiple state trajectories and thus scales compute with the number of experts; and (2) MoE-parameterized SSM, which mixes experts in parameter space, maintains a single state trajectory, and evaluates the recurrence once. Our method, Switch Mamba (Swimba), follows the second design by routing over expert-produced SSM streams. Theoretically, we establish well-definedness and stability for MoE-parameterized SSMs and characterize the relationship between the two designs. Empirically, we evaluate Swimba on standard benchmark tasks and measure real-time throughput and latency. Under matched FLOPs, Swimba achieves slightly better average performance than the baseline, with a small slowdown in real-time latency and throughput. Overall, these results suggest that parameter-space MoE can increase SSM capacity while keeping the dominant recurrence cost fixed.</p>
+</details>
+<details><summary>Research topics this paper covers (16)</summary>
+<h3>Mixture-of-experts inside SSM token mixers</h3>
+<p>If you want to add MoE to the sequence-mixing layer of a state space model rather than to the FFN, this paper introduces Swimba, which replaces the Mamba-2 in-projection with a set of expert projections plus a token-level router (Section 4.1, Fig. 3).</p>
+<h3>Taxonomy of MoE-SSM designs</h3>
+<p>If you are comparing ways to combine MoE with state space models, this paper separates MoE over separated SSMs (one state trajectory per expert, compute grows with experts) from MoE-parameterized SSMs (experts mixed in parameter space, one trajectory) and argues prior work conflates them (Sections 1, 3.2-3.3, Fig. 2).</p>
+<h3>Single recurrence cost independent of expert count</h3>
+<p>If you worry that MoE in a recurrent layer replicates the scan, this paper proves the parameter-mixed layer costs O(T C_step + T C_mix) versus O(T E C_step) for separated experts, so the recurrence is evaluated once regardless of the number of experts (Theorem 2, Appendix A.2).</p>
+<h3>Parameter-space mixing preserves SSD structure</h3>
+<p>If you need MoE routing to stay compatible with Mamba-2&#x27;s SSD kernel, this paper shows that mixing expert injection and readout streams yields exactly one selective SSM with state size N, independent of the number of experts and of top-k sparsity, so the existing SSD implementation is reused unchanged (Theorem 1, Section 3.1).</p>
+<h3>Stability of expert switching in recurrences</h3>
+<p>If you are concerned that token-wise expert switching destabilizes recurrent dynamics, this paper gives a BIBO stability bound: with a contractive shared transition (norm of A at most rho &lt; 1) and bounded mixed injection and readout, state and output stay bounded (Theorem 3, Appendix A.3).</p>
+<h3>When mixed and separated expert SSMs coincide</h3>
+<p>If you study whether averaging expert parameters approximates running separate expert recurrences, this paper proves exact equality when routing weights are time-invariant and readout is shared, and bounds the output gap otherwise by a stable recursion driven by each expert&#x27;s deviation from the mixture injection (Theorem 4, Appendix A.4).</p>
+<h3>Expressivity gain from routed linear projections</h3>
+<p>If you ask whether parameter-space MoE adds modeling power or is only an efficiency trick, this paper proves that with softmax routing over linear expert projections the layer strictly contains single-expert layers, via a two-expert construction that realizes the logistic sigmoid, which no single-expert layer (a degree-3 polynomial in this setting) can represent (Theorem 5, Appendix A.5).</p>
+<h3>Shared transition, expert-specific B, C and X</h3>
+<p>If you are choosing which SSM parameters to make expert-specific, Swimba shares the transition A across experts and time and places expert diversity only in the injection and readout streams (B, C, X), which keeps one coherent state trajectory (Section 3.2, Eq. 7-9; Section 6).</p>
+<h3>Upcycling a pretrained hybrid Mamba-Transformer</h3>
+<p>If you want to add experts to an existing pretrained hybrid model cheaply, this paper initializes from the Nemotron-H-8B checkpoint, replaces every Mamba-2 layer with a Swimba layer in the 52-layer hybrid layout, freezes the copied backbone, and trains only new expert and router parameters with SFT on the Llama-Nemotron Post-Training Dataset (Sections 4.2-4.3).</p>
+<h3>Matched-FLOPs accuracy on LM benchmarks</h3>
+<p>If you need evidence that SSM-layer MoE helps at constant compute, Swimba-14B (4 experts, top-1 per layer) raises the average accuracy from 69.47 to 70.81 (normalized 70.98 to 72.34) over Nemotron-H-8B across ARC-Challenge, ARC-Easy, BoolQ, HellaSwag, MMLU, OpenBookQA, PIQA, RTE and WinoGrande, e.g. MMLU 71.7 to 75.0, while BoolQ and OpenBookQA dip slightly (Table 1).</p>
+<h3>Per-token FLOPs of top-1 MoE SSM layers</h3>
+<p>If you measure the compute cost of sparse experts in SSM layers, this paper uses the PyTorch profiler and finds Swimba-14B at 1.51282e10 FLOPs per token versus 1.51263e10 for Nemotron-H-8B, a difference under 0.2% (Table 2, Section 5.2).</p>
+<h3>vLLM serving cost of MoE-SSM models</h3>
+<p>If you deploy SSM or hybrid models in vLLM, this paper benchmarks decoding throughput and latency on a single 40GB A100 across batch sizes 1-64 and input-output lengths 256-2048, finding Swimba-14B slightly slower than Nemotron-H-8B, with as low as a 10% slowdown (Fig. 4, Fig. 5, Section 5.2).</p>
+<h3>FLOPs versus wall-clock gap from routing</h3>
+<p>If you study why MoE models run slower than their FLOPs suggest, this paper reports that despite near-identical FLOPs Swimba shows a larger real-time gap, which it attributes to routing overhead, and notes that adding experts with a fixed number of active experts should leave throughput and latency largely unchanged (Section 5.2).</p>
+<h3>Positioning against MoE-Mamba, BlackMamba, Jamba, Routing Mamba</h3>
+<p>If you survey MoE-SSM hybrids, this paper contrasts block-mixing approaches that interleave dense SSM mixers with MoE MLPs (BlackMamba, MoE-Mamba, Jamba, Zamba, Nemotron-H/Nemotron-3) and Routing Mamba&#x27;s MoE projections, with its own parameter-space mixing that routes the B_t and C_t governing the state update (Section 6).</p>
+<h3>MoE for token mixing beyond attention</h3>
+<p>If you work on mixture-of-experts attention such as SwitchHead or Mixture-of-Attention-Heads, this paper adapts the idea of routing within token-mixing layers to linear-time SSMs, motivated by keeping O(L) mixing cost while growing parameters (Fig. 1, Section 6).</p>
+<h3>Link to switching state-space models</h3>
+<p>If you know classical switching state-space models (Ghahramani and Hinton), this paper relates them to MoE over separated SSMs, where each expert keeps its own memory, and contrasts this with compressing expert dynamics into one shared trajectory (Section 1, Section 3.4).</p>
+<h3>Questions this paper answers</h3>
+<ul><li>How can mixture-of-experts be applied to the Mamba token mixer instead of the MLP block?</li><li>Is there an MoE version of Mamba-2 where the experts are inside the SSM layer?</li><li>What is the difference between mixing expert outputs and mixing expert parameters in an MoE state space model?</li><li>Does putting experts inside an SSM multiply the cost of the recurrent state update?</li><li>Can you scale parameters of a Mamba layer with experts without running multiple scans?</li><li>Computational complexity of mixture-of-experts recurrent state space layers</li><li>Does routing between expert projections break the state space duality kernel in Mamba-2?</li><li>How to keep a single hidden state trajectory when adding experts to a selective SSM</li><li>Is a state space model with input-dependent expert routing BIBO stable?</li><li>Stability guarantees for switching selective SSMs with time-varying input matrices</li><li>Under what conditions is mixing parameters equivalent to mixing outputs of linear recurrences?</li><li>Error bound between parameter averaging and output averaging in mixture of linear dynamical systems</li><li>Does a mixture-of-experts projection strictly increase the expressivity of an SSM layer with one state update?</li><li>Theoretical expressivity of soft routing over linear experts</li><li>Which Mamba parameters should be routed by experts: the transition matrix or the input and output projections?</li><li>Mixture of experts generating B and C matrices of a selective state space model</li><li>Can you upcycle a pretrained Nemotron-H or Mamba-2 model into a mixture-of-experts SSM by training only experts and routers?</li><li>Continued training of new MoE parameters on a frozen hybrid Mamba-Transformer backbone</li><li>Does adding mixture-of-experts to Mamba layers improve MMLU and commonsense benchmarks at the same FLOPs?</li><li>Benchmark results of a 14B MoE Mamba model versus Nemotron-H-8B</li><li>How many FLOPs per token does a top-1 mixture-of-experts Mamba layer add?</li><li>Measuring inference FLOPs of hybrid SSM language models with the PyTorch profiler</li><li>What is the throughput and latency overhead of a mixture-of-experts Mamba model in vLLM?</li><li>Decoding benchmark of hybrid Mamba-Transformer models on an A100 across batch sizes and sequence lengths</li><li>Why does a mixture-of-experts model with equal FLOPs have higher latency than the dense baseline?</li><li>Routing overhead in MoE inference for state space models</li><li>How do MoE-Mamba, BlackMamba, Jamba and Routing Mamba differ in where they apply experts?</li><li>Related work on mixture-of-experts for state space models and linear-time sequence models</li><li>Is there an SSM analogue of mixture-of-attention-heads or SwitchHead?</li><li>Increasing parameter count of linear-time sequence mixers with sparse experts</li><li>How do switching state space models relate to mixture-of-experts in modern Mamba architectures?</li><li>Trade-off between expert-specific memory and a shared hidden state in mixture of recurrent experts</li></ul>
+</details>
+<details><summary>Citation (BibTeX)</summary>
+<pre>@inproceedings{du2026swimba,
+  title     = {Swimba: Switch Mamba Model Scales State Space Models},
+  author    = {Du, Zhixu and Chitty-Venkata, Krishna Teja and Emani, Murali and Vishwanath, Venkatram and Li, Hai and Chen, Yiran},
+  booktitle = {Advances in Neural Information Processing Systems 39 (NeurIPS 2026)},
+  year      = {2026},
+  url       = {https://arxiv.org/abs/2603.06938}
+}
+</pre>
+</details>
+<p class="small">Page ID: zdu-html-a65ce9</p>
+
+</main>
+</body>
+</html>

@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AUDITA: certified auditing and causal attribution of adverse outcomes in autonomous multi-agent systems | Zhixu Du</title>
+<meta name="description" content="AUDITA (arXiv preprint 2026): This paper presents Audita, an audit layer that grades each agent&#x27;s responsibility for an adverse outcome in multi-agent systems such as LLM-commanded...">
+<link rel="canonical" href="https://zhixudu.github.io/projects/audita/">
+<meta name="citation_title" content="AUDITA: certified auditing and causal attribution of adverse outcomes in autonomous multi-agent systems">
+<meta name="citation_author" content="Du, Zhixu">
+<meta name="citation_author" content="Chen, Yiran">
+<meta name="citation_publication_date" content="2026">
+<meta name="citation_online_date" content="2026/08/23">
+<meta name="citation_technical_report_institution" content="arXiv">
+<meta name="citation_technical_report_number" content="arXiv:2608.22160">
+<meta name="citation_arxiv_id" content="2608.22160">
+<meta name="citation_abstract_html_url" content="https://zhixudu.github.io/projects/audita/">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "ScholarlyArticle", "headline": "AUDITA: certified auditing and causal attribution of adverse outcomes in autonomous multi-agent systems", "name": "AUDITA: certified auditing and causal attribution of adverse outcomes in autonomous multi-agent systems", "author": [{"@type": "Person", "name": "Zhixu Du"}, {"@type": "Person", "name": "Yiran Chen"}], "datePublished": "2026", "abstract": "Physical automation is scaling toward fleets of embodied machines commanded by an AI brain. Early deployments already run factories and warehouses at production rates beyond any human line, and their adoption is accelerating. But when their joint decisions cause harm, everyone involved has reason to blame everyone else, the machine vendor, the algorithm provider, the factory operator, the insurer, and the regulator, and no method can divide the responsibility between them. Existing methods read logs whose origin they cannot verify and name a single culprit, misrepresenting outcomes that are overdetermined, preempted, or caused by an omission. We present AUDITA, an audit layer pairing a tamper-evident record of every inter-agent command with a certified, graded causal-attribution engine. We prove its verdict cannot be gamed: a rule-following agent can never be made to look guilty, an attempt to shift blame is itself caught and graded, and we establish the exact limit of what an evidence-based auditor can certify. On live language-model pipelines it reduces the standard judge baseline's responsibility error roughly threefold; on a benchmark of accident-grounded structures it recovers responsibility where single-culprit baselines fail, and stays invariant under forgery. AUDITA turns the question of who is to blame from an argument about logs into a calculation over evidence.", "keywords": ["Graded failure attribution for LLM multi-agent systems", "Most multi-agent failures are jointly caused", "Halpern-Pearl actual causality for agent messages", "Production gate before counterfactual grading", "Tamper-evident signed logs for agent accountability", "Framing attacks by insiders with valid keys", "Limits of ground-truth-free auditing", "Negligence doctrine and NESS test for AI blame", "LLM judges blame someone even with no culprit", "CulpaBench benchmark from robot accident records", "Responsibility for omissions and unexpected startup", "Shapley value versus causal responsibility for agents", "Bitwise-exact LLM replay for counterfactual certification", "Verdicts depend on the declared duty standard", "Attribution on static logs: Who&When comparison", "Computational cost of exact actual causation", "Off-record influence, flooding and re-chunking robustness", "Accident investigation and regulation for embodied AI fleets"], "url": "https://zhixudu.github.io/projects/audita/", "sameAs": ["https://arxiv.org/abs/2608.22160"], "isPartOf": {"@type": "CreativeWork", "name": "arXiv preprint 2026"}, "isBasedOn": "https://github.com/ZhixuDu/audita"}</script>
+<link rel="alternate" type="text/markdown" href="https://zhixudu.github.io/projects/audita/index.md">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=IBM+Plex+Sans:wght@500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+/* Layout: single reading column, publication list as ruled entries, venue as a small stamp. */
+:root{
+  --paper:#f7f6f2;--ink:#1b1d22;--muted:#5d6068;--rule:#dcdad3;--card:#ffffff;--accent:#1f4e79;
+  --serif:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#15171b;--ink:#e7e6e1;--muted:#a3a5ab;--rule:#2b2e34;--card:#1c1f24;--accent:#8fb8e0;color-scheme:dark}}
+:root[data-theme="dark"]{--paper:#15171b;--ink:#e7e6e1;--muted:#a3a5ab;--rule:#2b2e34;--card:#1c1f24;--accent:#8fb8e0;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.65 var(--serif)}
+main{max-width:44rem;margin:0 auto;padding-inline:1.25rem;padding-block:2.5rem 4rem}
+a{color:var(--accent);text-underline-offset:2px}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1{font-size:1.85rem;line-height:1.25;margin:0;text-wrap:balance;font-weight:600}
+h2{font:600 .78rem var(--sans);text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin:2.4rem 0 .8rem;padding-top:.8rem;border-top:1px solid var(--rule)}
+h3{font:600 1rem var(--sans);margin:1.2rem 0 .2rem}
+p{max-width:65ch}
+.meta,.small{color:var(--muted);font-size:.92rem}
+.venue{display:inline-block;font:600 .74rem var(--sans);letter-spacing:.04em;color:var(--accent);border:1px solid currentColor;border-radius:3px;padding:.05rem .45rem}
+.links{display:flex;flex-wrap:wrap;gap:.3rem 1rem;font:500 .88rem var(--sans)}
+.head{display:grid;gap:.6rem;margin-bottom:.4rem}
+.pub{display:grid;gap:.3rem;padding-block:1.1rem;border-bottom:1px solid var(--rule)}
+.pub .t{font-weight:600;line-height:1.35}
+.pub .t a{color:var(--ink);text-decoration:none}
+.pub .t a:hover{color:var(--accent)}
+pre{background:var(--card);border:1px solid var(--rule);padding:1rem;overflow-x:auto;font:.78rem/1.5 var(--mono)}
+nav{display:flex;gap:1rem;font:500 .88rem var(--sans);margin-bottom:2rem}
+nav a{text-decoration:none}
+details{margin-top:2.4rem;padding-top:.8rem;border-top:1px solid var(--rule)}
+summary{cursor:pointer;font:600 .78rem var(--sans);text-transform:uppercase;letter-spacing:.09em;color:var(--muted)}
+summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+</style>
+</head>
+<body>
+<main>
+<nav><a href="https://zhixudu.github.io/">&larr; Zhixu Du</a><a href="https://zhixudu.github.io/#publications">Publications</a></nav>
+<div class="head"><div><span class="venue">arXiv preprint 2026</span></div>
+<h1>AUDITA: certified auditing and causal attribution of adverse outcomes in autonomous multi-agent systems</h1>
+<div class="meta"><strong>Zhixu Du</strong>, Yiran Chen</div>
+<div class="links"><a href="https://arxiv.org/abs/2608.22160">arXiv</a> <a href="https://arxiv.org/pdf/2608.22160">PDF</a> <a href="https://github.com/ZhixuDu/audita">Code</a> <a href="citation.bib">BibTeX</a></div></div>
+<h2>Extended abstract</h2>
+<p>This paper presents Audita, an audit layer that grades each agent&#x27;s responsibility for an adverse outcome in multi-agent systems such as LLM-commanded robot fleets, where existing methods name a single culprit from unverifiable logs. Each inter-agent message is an Ed25519-signed tuple of author, payload, citations, and committed effect, sealed into append-only Merkle-committed epochs. A production gate retires commands whose effect never reached the outcome; survivors are graded by the modified Halpern-Pearl definition with the Chockler-Halpern degree rho = 1/(|X*|+|W*|), covering overdetermination, preemption, and omissions as duty-indexed absence variables. Each cause is certified by counterfactual replay, bitwise exact on pinned open-weight models in vLLM and Hoeffding-bounded on hosted ones. The output is a per-agent negligence-law duty, breach, causation, and harm verdict, matching the tort-law NESS test on monotone models.</p>
+<p>Under replayable models, a recorded channel, and unstolen keys, the paper proves that forgeries cannot change the verdict and deletions only widen a responsibility interval; that a duty-compliant agent framed by malicious insiders into a true but-for cause is never found culpable, while a replay-checkable certificate grades the framers; and that when agents make honest errors, no record-based breach standard is both sound and complete.</p>
+<p>On live GSM8K planner-solver-aggregator-verifier pipelines with Qwen2.5-72B-Instruct, Audita cuts the Who&amp;When LLM judge&#x27;s responsibility error from 0.589 to 0.170 with the answer key and 0.159 without it, against 0.223 for Shapley attribution and 0.408 for both CAR/CausalFlow single-site scoring and duty-ablated Audita. 95-98% of failures are joint solver-aggregator causes, 58.7% of Who&amp;When traces show a duty-bearing verifier or orchestrator staying silent, and changing only the duty standard flips culpability in 69.8% of cases. Shapley wins on Qwen2.5-7B (0.041 versus 0.111) but trails on Llama-3.1-8B and Qwen2.5-72B. On Who&amp;When&#x27;s 184 static traces, a variant without replay reaches agent accuracy 0.408 and step accuracy 0.321, matching LLM judges.</p>
+<p>The paper releases CulpaBench, over 1,000 multi-robot facility incidents grounded in 42 OSHA/NIOSH accident records, with independent-oracle ground truth. Audita is exact (error 0.000) on redundancy, a transcript-identical inert twin, preemption, omission, and delegation chains, against averages of 0.303-0.343 for LLM judges, 0.433 single-site, 0.452 Shapley, and 0.900 for an anomaly detector. On 300 no-cause accidents, judges blame someone in 100% of runs even when offered NONE; Audita never does. On 74 held-out omitted-halt incidents, judges convict an innocent in 67-100% of runs. Forgeries push an unsigned log to 0.365 error, framing an innocent in all 450 probes, while the certified verdict stays exact; under 600 insider attacks victim culpability stays 0.000, and a level-2 scapegoat succeeds in 0 of 330 draws.</p>
+<p>Exact computation rises from 0.02 s at 2 candidates to 62.1 s at 14, at 393 B per message. Moving 31% of coordination off the record hides 0.157 of responsibility with zero over-attribution; grades resist re-chunking and log flooding, and verdict-guided repair averts 2.4x the harm of a random fix. Evidence is simulated and limited to discrete threshold incidents; the paper argues EU AI Act records must be signed, cited, sealed, and causally analysable.</p>
+<details><summary>Original abstract (arXiv)</summary>
+<p>Physical automation is scaling toward fleets of embodied machines commanded by an AI brain. Early deployments already run factories and warehouses at production rates beyond any human line, and their adoption is accelerating. But when their joint decisions cause harm, everyone involved has reason to blame everyone else, the machine vendor, the algorithm provider, the factory operator, the insurer, and the regulator, and no method can divide the responsibility between them. Existing methods read logs whose origin they cannot verify and name a single culprit, misrepresenting outcomes that are overdetermined, preempted, or caused by an omission. We present AUDITA, an audit layer pairing a tamper-evident record of every inter-agent command with a certified, graded causal-attribution engine. We prove its verdict cannot be gamed: a rule-following agent can never be made to look guilty, an attempt to shift blame is itself caught and graded, and we establish the exact limit of what an evidence-based auditor can certify. On live language-model pipelines it reduces the standard judge baseline&#x27;s responsibility error roughly threefold; on a benchmark of accident-grounded structures it recovers responsibility where single-culprit baselines fail, and stays invariant under forgery. AUDITA turns the question of who is to blame from an argument about logs into a calculation over evidence.</p>
+</details>
+<details><summary>Research topics this paper covers (18)</summary>
+<h3>Graded failure attribution for LLM multi-agent systems</h3>
+<p>If you work on automated failure attribution for LLM multi-agent pipelines, this paper replaces single-culprit labels with a per-agent graded responsibility verdict and, on live GSM8K planner-solver-aggregator-verifier pipelines, cuts the Who&amp;When-style LLM judge&#x27;s responsibility error from 0.589 to 0.170 (gold-informed) and 0.159 (no answer key) (Results, Table 1).</p>
+<h3>Most multi-agent failures are jointly caused</h3>
+<p>If you study why multi-agent LLM systems fail, this paper finds that under duty-aware graded ground truth 95-98% of adverse incidents (56/57, 43/47, 39/41) are joint solver-aggregator incidents, none fit the single-culprit structure, and in 58.7% of Who&amp;When traces a duty-bearing verifier or orchestrator stayed silent through the decisive error (Results, live failures).</p>
+<h3>Halpern-Pearl actual causality for agent messages</h3>
+<p>If you apply actual causality or degree-of-responsibility theory to AI systems, this paper builds a structural causal model over certified inter-agent messages and duty-indexed absence variables, grades causes with the modified Halpern-Pearl definition and the Chockler-Halpern degree rho = 1/(|X*|+|W*|), and handles overdetermination (1/2, 1/2 split), preemption and omission natively (Methods, Eqs. 1-2).</p>
+<h3>Production gate before counterfactual grading</h3>
+<p>If you need to separate causal production from counterfactual dependence, this paper adds a gate that retires commands whose committed effect never propagated to the outcome before any counterfactual is computed (Proposition 2), and shows the gate is load-bearing on preemption and on a transcript-identical &#x27;inert twin&#x27; that every transcript-level method misclassifies (Ablations; Extended Data Fig. S1).</p>
+<h3>Tamper-evident signed logs for agent accountability</h3>
+<p>If you design audit logs for AI agents, this paper specifies a message format (author, payload, citation set, committed effect predicate, Ed25519 signature) sealed into Merkle-committed append-only epochs, proves forgeries leave the verdict unchanged and deletions only widen a responsibility interval (Proposition 3), and measures that forgeries drive an unsigned log to 0.365 error and frame an innocent in all 450 probes while the certified verdict stays at 0.000 (Figure 3b).</p>
+<h3>Framing attacks by insiders with valid keys</h3>
+<p>If you study adversarial manipulation of blame or responsibility, this paper constructs two conduct-level attacks (conditioning and inevitability rigging) that make a compliant agent a true but-for cause, proves such an agent is never found culpable (Theorem 1) and that a replay-checkable blame-shift certificate grades the framers (Theorem 2, extended to all orders in Theorem 5); over 600 incidents victim involvement reaches 1.0 but culpability stays 0.000, and a level-2 scapegoat convicts a benign deviator in 0 of 330 draws (Results, Robustness).</p>
+<h3>Limits of ground-truth-free auditing</h3>
+<p>If you ask what an auditor can certify without an answer key, this paper proves a completeness barrier: when compliant agents can make honest errors, no breach standard computed from the record is both sound and complete, and closing the gap amounts to verifying task correctness (Theorem 4); empirically the gold-free deployable verdict matches the gold-informed one (0.159 vs 0.170) (Ablations; Remark S8).</p>
+<h3>Negligence doctrine and NESS test for AI blame</h3>
+<p>If you connect legal causation to AI accountability, this paper outputs a per-agent duty-breach-causation-harm verdict from negligence law that can report a negligent-but-inert agent or an involved-but-not-culpable conduit, and proves that on monotone incident models its causes coincide with the NESS test from tort doctrine via minimal transversals of prime implicants (Remark 1; Proposition S1; Figure 2).</p>
+<h3>LLM judges blame someone even with no culprit</h3>
+<p>If you evaluate LLM-as-a-judge for incident analysis, this paper shows that on 300 no-cause accidents LLM judges named a culprit in 100% of runs across all three Who&amp;When formats, even with a prompt offering NONE, and an anomaly detector did so in every case, while the certified engine manufactured a culprit in zero cases (Results, Negative controls).</p>
+<h3>CulpaBench benchmark from robot accident records</h3>
+<p>If you need a benchmark with analytic ground truth for responsibility attribution, this paper releases CulpaBench, over 1,000 incidents in a deterministic multi-robot facility whose structures (redundancy, inert twin, preemption, omission, delegation chain, record attack, no-cause and trivial controls) are grounded in 42 public OSHA/NIOSH robot-accident records, with ground truth from an independent oracle sharing no code with the engine (Table 2; Extended Data Table 1; Note S5).</p>
+<h3>Responsibility for omissions and unexpected startup</h3>
+<p>If you work on blaming inaction, this paper encodes required-but-unissued commands as first-class absence variables and, on 74 held-out unexpected-startup incidents (the modal fatal pattern in US robot fatality data) where the only breach is an omitted halt, is exact while single-site counterfactual scoring blames the innocent sole actor every time and LLM judges convict an innocent in 67-100% of runs (Results, Generalisation).</p>
+<h3>Shapley value versus causal responsibility for agents</h3>
+<p>If you use Shapley values for multi-agent credit or blame, this paper finds Shapley the strongest baseline on live pipelines (0.223) but duty-blind on CulpaBench (average 0.452), and the comparison depends on model scale: Shapley wins on Qwen2.5-7B (0.041 vs 0.111) while the graded verdict leads on Llama-3.1-8B and Qwen2.5-72B, with margins -0.070, +0.037, +0.053 (Figure 3a; Table 2).</p>
+<h3>Bitwise-exact LLM replay for counterfactual certification</h3>
+<p>If you need reproducible counterfactual replay of LLM agents, this paper certifies each reported cause by re-execution under a serial replay protocol on pinned open-weight models in vLLM (concurrent batching breaks bitwise exactness even in batch-invariant modes) and, for hosted non-deterministic models, gives a Hoeffding-based guarantee bounding false causes by alpha plus an action-match score (Proposition 1; Note S7).</p>
+<h3>Verdicts depend on the declared duty standard</h3>
+<p>If you study normative standards in AI accountability, this paper shows that holding causal facts fixed and varying only the registered duty standard flips culpability in 69.8% of cases, and that removing the duty layer raises live error from 0.170 to 0.408, so a verdict must ship with its standard attached (Results, Ablations).</p>
+<h3>Attribution on static logs: Who&amp;When comparison</h3>
+<p>If you benchmark on Who&amp;When, this paper reports a degraded structure-aware attributor without replay or cryptography reaching agent-accuracy 0.408 and step-accuracy 0.321 on the 184 static traces, within the Qwen2.5-72B judge band (0.41-0.51) and above two of three judge formats on step accuracy, arguing the advantage requires counterfactual access (Table 3).</p>
+<h3>Computational cost of exact actual causation</h3>
+<p>If you worry about the NP-hardness of actual causation in practice, this paper measures exact recovery at every tested incident width while wall-clock per query roughly doubles per added candidate (0.02 s at k=2 to 62.1 s at k=14), placing the practical limit near k=8 at a one-second budget, with record overhead of 393 B per signed message and 118 KB per incident (Extended Data Table 2; Costs and limits).</p>
+<h3>Off-record influence, flooding and re-chunking robustness</h3>
+<p>If you ask how attribution behaves outside its assumptions or under manipulation, this paper moves 31% of coordination off the recorded bus and finds 0.157 of responsibility becomes invisible with over-attribution staying 0.000 over 1,200 draws, shows flooding the log with inert commands has slope 0.000 for all methods, proves grades are invariant to how an agent splits its output into messages (Proposition S3), and finds verdict-guided repair averts 2.4x the harm of a random fix (Costs and limits; Note S6).</p>
+<h3>Accident investigation and regulation for embodied AI fleets</h3>
+<p>If you work on incident investigation, liability or AI regulation for LLM-commanded robot fleets, this paper proposes what EU AI Act-mandated event records must be (signed, cited, sealed, causally analysable) to support accountability, positions itself relative to STAMP/CAST blame-free analysis, the ethical black box, PeerReview and Accountable Virtual Machines, and lists its scope limits: discrete threshold incidents only and simulated, not physical-robot, evidence (Discussion; Note S10).</p>
+<h3>Questions this paper answers</h3>
+<ul><li>How can I attribute blame to multiple agents when an LLM multi-agent pipeline fails, instead of naming one culprit?</li><li>Which methods improve on LLM-as-judge failure attribution for multi-agent systems?</li><li>Are failures in multi-agent LLM pipelines usually caused by one agent or by several agents jointly?</li><li>Does the single-culprit assumption in multi-agent failure attribution benchmarks hold?</li><li>How do I compute Chockler-Halpern degree of responsibility for agents in a multi-agent system?</li><li>Applying the modified Halpern-Pearl definition of actual causation to LLM agent logs</li><li>How to handle preemption when doing counterfactual blame attribution over logs?</li><li>Why can two identical transcripts require different causal attributions?</li><li>What should a tamper-evident audit log for LLM multi-agent systems contain?</li><li>Can log forgery or deletion change blame attribution for AI agents, and how to prevent it?</li><li>Can a malicious agent frame an innocent agent in a causal responsibility analysis?</li><li>Non-frameability guarantees for blame attribution in multi-agent systems</li><li>Is it possible to audit AI agent failures soundly and completely without ground-truth labels?</li><li>Theoretical limits of blame attribution when agents make honest mistakes</li><li>How can tort law concepts like duty, breach and NESS causation be formalized for autonomous agents?</li><li>Relationship between the Halpern-Pearl definition and the NESS test</li><li>Do LLM judges over-attribute blame when no agent is at fault?</li><li>Negative controls for automated failure attribution methods</li><li>Is there a benchmark for causal responsibility attribution with planted ground truth?</li><li>Datasets of robot accident structures for evaluating blame attribution</li><li>How to attribute responsibility to an agent that failed to act, such as a missing safety halt?</li><li>Causal attribution of omissions in multi-robot safety incidents</li><li>Is Shapley value attribution a good way to assign blame among LLM agents?</li><li>How does failure attribution accuracy change across Qwen2.5-7B, Llama-3.1-8B and Qwen2.5-72B?</li><li>How to make LLM inference deterministic enough for counterfactual replay of agent runs?</li><li>Statistical guarantees for counterfactual causal claims with non-deterministic LLMs</li><li>Does the choice of normative standard change who is held responsible for an AI agent failure?</li><li>Separating causal involvement from culpability in AI incident analysis</li><li>What agent-level and step-level accuracy do methods reach on the Who&amp;When failure attribution benchmark?</li><li>Does counterfactual re-execution help multi-agent failure attribution compared with reading static logs?</li><li>How expensive is exact Halpern-Pearl causal computation on real incident graphs?</li><li>Storage overhead of cryptographically signed agent message logs</li><li>What happens to multi-agent blame attribution when agents coordinate through side channels not in the log?</li><li>Can an agent dilute its responsibility by splitting or flooding messages?</li><li>How should logging for high-risk AI systems under the EU AI Act be designed to support liability decisions?</li><li>Accountability and incident forensics for multi-robot systems controlled by LLMs</li></ul>
+</details>
+<details><summary>Citation (BibTeX)</summary>
+<pre>@misc{du2026audita,
+  title         = {AUDITA: certified auditing and causal attribution of adverse outcomes in autonomous multi-agent systems},
+  author        = {Du, Zhixu and Chen, Yiran},
+  year          = {2026},
+  eprint        = {2608.22160},
+  archivePrefix = {arXiv},
+  url           = {https://arxiv.org/abs/2608.22160}
+}
+</pre>
+</details>
+<p class="small">Page ID: zdu-html-a65ce9</p>
+
+</main>
+</body>
+</html>

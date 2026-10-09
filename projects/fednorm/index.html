@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rethinking Normalization Methods in Federated Learning | Zhixu Du</title>
+<meta name="description" content="FedNorm (DistributedML @ CoNEXT 2022): This paper explains why normalization layers matter in federated learning (FL) and why batch normalization (BatchNorm) degrades the FedAvg global mode...">
+<link rel="canonical" href="https://zhixudu.github.io/projects/fednorm/">
+<meta name="citation_title" content="Rethinking Normalization Methods in Federated Learning">
+<meta name="citation_author" content="Du, Zhixu">
+<meta name="citation_author" content="Sun, Jingwei">
+<meta name="citation_author" content="Li, Ang">
+<meta name="citation_author" content="Chen, Pin-Yu">
+<meta name="citation_author" content="Zhang, Jianyi">
+<meta name="citation_author" content="Li, Hai">
+<meta name="citation_author" content="Chen, Yiran">
+<meta name="citation_publication_date" content="2022">
+<meta name="citation_online_date" content="2022/10/07">
+<meta name="citation_conference_title" content="Proceedings of the 3rd International Workshop on Distributed Machine Learning (DistributedML &#x27;22)">
+<meta name="citation_doi" content="10.1145/3565010.3569062">
+<meta name="citation_arxiv_id" content="2210.03277">
+<meta name="citation_abstract_html_url" content="https://zhixudu.github.io/projects/fednorm/">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "ScholarlyArticle", "headline": "Rethinking Normalization Methods in Federated Learning", "name": "Rethinking Normalization Methods in Federated Learning", "author": [{"@type": "Person", "name": "Zhixu Du"}, {"@type": "Person", "name": "Jingwei Sun"}, {"@type": "Person", "name": "Ang Li"}, {"@type": "Person", "name": "Pin-Yu Chen"}, {"@type": "Person", "name": "Jianyi Zhang"}, {"@type": "Person", "name": "Hai (Helen) Li"}, {"@type": "Person", "name": "Yiran Chen"}], "datePublished": "2022", "abstract": "Federated learning (FL) is a popular distributed learning framework that can reduce privacy risks by not explicitly sharing private data. In this work, we explicitly uncover external covariate shift problem in FL, which is caused by the independent local training processes on different devices. We demonstrate that external covariate shifts will lead to the obliteration of some devices' contributions to the global model. Further, we show that normalization layers are indispensable in FL since their inherited properties can alleviate the problem of obliterating some devices' contributions. However, recent works have shown that batch normalization, which is one of the standard components in many deep neural networks, will incur accuracy drop of the global model in FL. The essential reason for the failure of batch normalization in FL is poorly studied. We unveil that external covariate shift is the key reason why batch normalization is ineffective in FL. We also show that layer normalization is a better choice in FL which can mitigate the external covariate shift and improve the performance of the global model. We conduct experiments on CIFAR10 under non-IID settings. The results demonstrate that models with layer normalization converge fastest and achieve the best or comparable accuracy for three different model architectures.", "keywords": ["External covariate shift in federated learning", "Why batch normalization fails in federated learning", "Layer normalization as BatchNorm replacement in FL", "Weight-norm imbalance obliterating client contributions", "Scale invariance keeps client weight norms balanced", "Two-device toy experiment on channel statistics", "Comparing BN, GN, LN, IN and no normalization in FedAvg", "Group normalization performs close to layer normalization", "Instance norm and non-aggregated BatchNorm statistics underperform", "ResNet-18 without normalization in federated learning", "Pathological non-IID CIFAR-10 FedAvg setup", "Normalization effects on federated convergence speed", "Rethinking FedBN, HeteroFL static BN and GroupNorm in FL"], "url": "https://zhixudu.github.io/projects/fednorm/", "sameAs": ["https://arxiv.org/abs/2210.03277", "https://doi.org/10.1145/3565010.3569062"], "isPartOf": {"@type": "PublicationEvent", "name": "Proceedings of the 3rd International Workshop on Distributed Machine Learning (DistributedML '22)"}, "isBasedOn": "https://github.com/ZhixuDu/FedNorm"}</script>
+<link rel="alternate" type="text/markdown" href="https://zhixudu.github.io/projects/fednorm/index.md">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=IBM+Plex+Sans:wght@500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+/* Layout: single reading column, publication list as ruled entries, venue as a small stamp. */
+:root{
+  --paper:#f7f6f2;--ink:#1b1d22;--muted:#5d6068;--rule:#dcdad3;--card:#ffffff;--accent:#1f4e79;
+  --serif:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#15171b;--ink:#e7e6e1;--muted:#a3a5ab;--rule:#2b2e34;--card:#1c1f24;--accent:#8fb8e0;color-scheme:dark}}
+:root[data-theme="dark"]{--paper:#15171b;--ink:#e7e6e1;--muted:#a3a5ab;--rule:#2b2e34;--card:#1c1f24;--accent:#8fb8e0;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.65 var(--serif)}
+main{max-width:44rem;margin:0 auto;padding-inline:1.25rem;padding-block:2.5rem 4rem}
+a{color:var(--accent);text-underline-offset:2px}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1{font-size:1.85rem;line-height:1.25;margin:0;text-wrap:balance;font-weight:600}
+h2{font:600 .78rem var(--sans);text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin:2.4rem 0 .8rem;padding-top:.8rem;border-top:1px solid var(--rule)}
+h3{font:600 1rem var(--sans);margin:1.2rem 0 .2rem}
+p{max-width:65ch}
+.meta,.small{color:var(--muted);font-size:.92rem}
+.venue{display:inline-block;font:600 .74rem var(--sans);letter-spacing:.04em;color:var(--accent);border:1px solid currentColor;border-radius:3px;padding:.05rem .45rem}
+.links{display:flex;flex-wrap:wrap;gap:.3rem 1rem;font:500 .88rem var(--sans)}
+.head{display:grid;gap:.6rem;margin-bottom:.4rem}
+.pub{display:grid;gap:.3rem;padding-block:1.1rem;border-bottom:1px solid var(--rule)}
+.pub .t{font-weight:600;line-height:1.35}
+.pub .t a{color:var(--ink);text-decoration:none}
+.pub .t a:hover{color:var(--accent)}
+pre{background:var(--card);border:1px solid var(--rule);padding:1rem;overflow-x:auto;font:.78rem/1.5 var(--mono)}
+nav{display:flex;gap:1rem;font:500 .88rem var(--sans);margin-bottom:2rem}
+nav a{text-decoration:none}
+details{margin-top:2.4rem;padding-top:.8rem;border-top:1px solid var(--rule)}
+summary{cursor:pointer;font:600 .78rem var(--sans);text-transform:uppercase;letter-spacing:.09em;color:var(--muted)}
+summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+</style>
+</head>
+<body>
+<main>
+<nav><a href="https://zhixudu.github.io/">&larr; Zhixu Du</a><a href="https://zhixudu.github.io/#publications">Publications</a></nav>
+<div class="head"><div><span class="venue">DistributedML @ CoNEXT 2022</span></div>
+<h1>Rethinking Normalization Methods in Federated Learning</h1>
+<div class="meta"><strong>Zhixu Du</strong>, Jingwei Sun, Ang Li, Pin-Yu Chen, Jianyi Zhang, Hai (Helen) Li, Yiran Chen</div>
+<div class="links"><a href="https://arxiv.org/abs/2210.03277">arXiv</a> <a href="https://arxiv.org/pdf/2210.03277">PDF</a> <a href="https://doi.org/10.1145/3565010.3569062">Publisher</a> <a href="https://github.com/ZhixuDu/FedNorm">Code</a> <a href="citation.bib">BibTeX</a></div></div>
+<h2>Extended abstract</h2>
+<p>This paper explains why normalization layers matter in federated learning (FL) and why batch normalization (BatchNorm) degrades the FedAvg global model. It identifies external covariate shift: because devices run independent multi-step local training, per-channel feature statistics diverge across devices and neurons must re-adapt to a new feature distribution after every aggregation, which slows global convergence.</p>
+<p>A fully connected layer analysis with whitened inputs shows that external covariate shift amounts to a shift in weight norms: when one client&#x27;s weights have a much larger norm, averaging lets it dominate and obliterates the contribution of clients with small-norm weights. Normalization layers counter this through their scale-invariance: the gradient of a scale-invariant BatchNorm or LayerNorm layer is orthogonal to the preceding weights, so the squared weight norm grows only as the initial norm plus accumulated squared gradients, keeping the norms of clients that share an initialization balanced.</p>
+<p>The paper argues that BatchNorm fails in FL not only because of non-IID data but because the same channel is trained to have different statistics on different devices, so averaging local running statistics on the server yields statistics that mismatch the aggregated model&#x27;s features. A toy MNIST experiment supports this: two 3-layer, single-channel convolutional models with BatchNorm, trained from the same initialization on data that differ only in mean, end up with clearly different output statistics in the same channel. LayerNorm normalizes each sample across channels, keeps no cross-device running statistics, and is proposed as the replacement. The paper contrasts this explanation with FedBN (personalized FL only), GroupNorm, and HeteroFL&#x27;s static BatchNorm.</p>
+<p>Experiments run FedAvg on CIFAR-10 split pathologically across 100 devices (2 classes, 100 samples per class each), 10 devices per round, 10 local epochs, batch size 64, SGD with learning rate 0.01, and 5000 rounds over three seeds on TITAN RTX GPUs, with VGG-11, ResNet-18 and a simple CNN. It compares group, layer, instance, batch, fixed (non-aggregated) batch, and no normalization. LayerNorm converges fastest and reaches the best or near-best accuracy: 63.52% on VGG-11 (11.96 and 27.01 points above BatchNorm and no normalization), 59.70% on ResNet-18 (BatchNorm 34.38%), and 52.02% on the CNN (BatchNorm 33.29%). GroupNorm tracks LayerNorm closely (63.10% on VGG-11), InstanceNorm trails it on all three models, and fixed BatchNorm does not help (33.85% on ResNet-18). ResNet-18 without normalization reaches 60.73%, attributed to residual connections keeping weights near initialization, but needs careful hyperparameter tuning for stable training.</p>
+<details><summary>Original abstract (arXiv)</summary>
+<p>Federated learning (FL) is a popular distributed learning framework that can reduce privacy risks by not explicitly sharing private data. In this work, we explicitly uncover external covariate shift problem in FL, which is caused by the independent local training processes on different devices. We demonstrate that external covariate shifts will lead to the obliteration of some devices&#x27; contributions to the global model. Further, we show that normalization layers are indispensable in FL since their inherited properties can alleviate the problem of obliterating some devices&#x27; contributions. However, recent works have shown that batch normalization, which is one of the standard components in many deep neural networks, will incur accuracy drop of the global model in FL. The essential reason for the failure of batch normalization in FL is poorly studied. We unveil that external covariate shift is the key reason why batch normalization is ineffective in FL. We also show that layer normalization is a better choice in FL which can mitigate the external covariate shift and improve the performance of the global model. We conduct experiments on CIFAR10 under non-IID settings. The results demonstrate that models with layer normalization converge fastest and achieve the best or comparable accuracy for three different model architectures.</p>
+</details>
+<details><summary>Research topics this paper covers (13)</summary>
+<h3>External covariate shift in federated learning</h3>
+<p>If you study why FedAvg global models converge slowly, this paper names and defines external covariate shift: per-channel feature statistics diverge across clients because each runs independent local training, so neurons must re-adapt after every aggregation (Section 1, Section 3.1, Figure 1).</p>
+<h3>Why batch normalization fails in federated learning</h3>
+<p>If you work on BatchNorm in FL, this paper argues the accuracy drop is not only due to non-IID data: clients&#x27; channel statistics drift apart during local training, so averaged running statistics on the server mismatch the aggregated model&#x27;s real feature statistics (Section 3.3).</p>
+<h3>Layer normalization as BatchNorm replacement in FL</h3>
+<p>If you are choosing a normalization layer for a federated CNN, this paper recommends LayerNorm because it normalizes per sample and has no cross-client running statistics; it gives the fastest convergence and best or near-best CIFAR-10 accuracy on CNN, VGG-11 and ResNet-18 (Section 3.4, Table 2, Figure 4).</p>
+<h3>Weight-norm imbalance obliterating client contributions</h3>
+<p>If you study aggregation fairness or client contribution in FedAvg, this paper shows with an FC-layer analysis that clients whose weights have much larger norms dominate the averaged model, erasing the contribution of small-norm clients (Section 3.1, Figure 2).</p>
+<h3>Scale invariance keeps client weight norms balanced</h3>
+<p>If you work on theory of normalization and auto learning-rate tuning, this paper uses the scale-invariance of BN/LN (gradient orthogonal to weights, Lemma 1) to show weight norms grow as initial norm plus accumulated squared gradients, so clients starting from the same initialization keep comparable norms (Section 2.2, Section 3.2, Eq. 5 and 7).</p>
+<h3>Two-device toy experiment on channel statistics</h3>
+<p>If you want direct evidence of client feature-statistics divergence, this paper trains two identical 3-layer single-channel conv models with BatchNorm on MNIST from the same initialization, with data differing only in mean, and shows the same channel ends up with clearly different output statistics on each device (Section 3.3, Figure 3).</p>
+<h3>Comparing BN, GN, LN, IN and no normalization in FedAvg</h3>
+<p>If you need a benchmark of normalization layers under FedAvg, this paper compares group, layer, instance, batch, fixed (non-aggregated) batch normalization and no normalization on CIFAR-10 with VGG-11, ResNet-18 and a LeNet-style CNN over 5000 rounds and three seeds (Section 4, Table 2).</p>
+<h3>Group normalization performs close to layer normalization</h3>
+<p>If you use GroupNorm in FL following Hsieh et al., this paper finds GroupNorm tracks LayerNorm closely in all three architectures (e.g., 63.10% vs 63.52% on VGG-11), and notes GroupNorm as instance-based normalization may be sensitive to sample noise (Section 4.2, Table 2, Section 5).</p>
+<h3>Instance norm and non-aggregated BatchNorm statistics underperform</h3>
+<p>If you consider keeping BatchNorm statistics local (not aggregated) or using InstanceNorm, this paper finds fixed BatchNorm is no better than standard BatchNorm (e.g., 33.85% vs 34.38% on ResNet-18) and InstanceNorm trails LayerNorm on all three models (Table 2).</p>
+<h3>ResNet-18 without normalization in federated learning</h3>
+<p>If you train residual networks in FL, this paper reports that ResNet-18 with no normalization reaches 60.73% versus 59.70% for LayerNorm and 34.38% for BatchNorm, attributing this to residual connections keeping weights near initialization, but notes it needs careful hyperparameter tuning for stable training (Section 4.2, Table 2).</p>
+<h3>Pathological non-IID CIFAR-10 FedAvg setup</h3>
+<p>If you replicate label-skew FL experiments, this paper uses CIFAR-10 split across 100 devices with 2 classes and 100 samples per class each, 10 clients sampled per round, 10 local epochs, batch size 64, SGD lr 0.01, 5000 rounds, on TITAN RTX GPUs (Section 4, Section 4.1).</p>
+<h3>Normalization effects on federated convergence speed</h3>
+<p>If you care about communication rounds to convergence in FL, this paper&#x27;s accuracy-vs-rounds curves show LayerNorm converging fastest across CNN, VGG-11 and ResNet-18, with BatchNorm lagging and VGG-11 LayerNorm gaining 11.96 and 27.01 points over BatchNorm and no normalization (Section 4.2, Figure 4).</p>
+<h3>Rethinking FedBN, HeteroFL static BN and GroupNorm in FL</h3>
+<p>If you survey normalization alternatives for FL, this paper positions FedBN (local BN, limited to personalized FL), GroupNorm (Hsieh et al.) and HeteroFL&#x27;s static BatchNorm, arguing none explains why BatchNorm fails and offering external covariate shift as that explanation (Section 5).</p>
+<h3>Questions this paper answers</h3>
+<ul><li>Why do feature statistics diverge across clients during federated local training?</li><li>What is the federated counterpart of internal covariate shift?</li><li>Why does BatchNorm hurt FedAvg accuracy even beyond data heterogeneity?</li><li>Is averaging BatchNorm running mean and variance across clients correct?</li><li>Which normalization layer should I use for federated training of CNNs?</li><li>Does layer norm work better than batch norm under non-IID federated learning?</li><li>Can differences in weight norms across clients cause some clients to be ignored in model averaging?</li><li>How does parameter norm discrepancy affect FedAvg aggregation?</li><li>How does the scale-invariant property of normalization layers help federated aggregation?</li><li>Why is the gradient of a scale-invariant layer orthogonal to its weights, and what does that imply for weight norm growth?</li><li>Do two clients trained from the same initialization end up with different per-channel activation distributions?</li><li>Is there a simple experiment showing BatchNorm statistics mismatch between federated clients?</li><li>How do group norm, instance norm, layer norm and batch norm compare in federated learning on CIFAR-10?</li><li>Benchmark of normalization layers for FedAvg with VGG and ResNet</li><li>Is group normalization as good as layer normalization in federated learning?</li><li>GroupNorm vs LayerNorm accuracy under non-IID FedAvg</li><li>Does not aggregating BatchNorm running statistics fix BatchNorm in federated learning?</li><li>How does instance normalization perform in federated CNN training?</li><li>Can ResNet be trained in federated learning without any normalization layer?</li><li>Why do residual connections help normalization-free federated training?</li><li>What hyperparameters are used for FedAvg on CIFAR-10 with 2 classes per client?</li><li>Example federated learning experimental setup with 100 clients and pathological non-IID partition</li><li>Which normalization layer reduces the number of communication rounds in FedAvg?</li><li>How much does normalization choice change VGG accuracy in non-IID federated learning?</li><li>What are the alternatives to BatchNorm proposed for federated learning and what are their limitations?</li><li>Is FedBN applicable to non-personalized global-model federated learning?</li></ul>
+</details>
+<details><summary>Citation (BibTeX)</summary>
+<pre>@inproceedings{du2022fednorm,
+  title     = {Rethinking Normalization Methods in Federated Learning},
+  author    = {Du, Zhixu and Sun, Jingwei and Li, Ang and Chen, Pin-Yu and Zhang, Jianyi and Li, Hai and Chen, Yiran},
+  booktitle = {Proceedings of the 3rd International Workshop on Distributed Machine Learning (DistributedML &#x27;22)},
+  year      = {2022},
+  doi       = {10.1145/3565010.3569062},
+  url       = {https://arxiv.org/abs/2210.03277}
+}
+</pre>
+</details>
+<p class="small">Page ID: zdu-html-a65ce9</p>
+
+</main>
+</body>
+</html>
