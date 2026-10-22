@@ -76,44 +76,58 @@ summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 <details><summary>Original abstract (arXiv)</summary>
 <p>Mixture-of-Experts (MoE) has emerged as a favorable architecture in the era of large models due to its inherent advantage, i.e., enlarging model capacity without incurring notable computational overhead. Yet, the realization of such benefits often results in ineffective GPU memory utilization, as large portions of the model parameters remain dormant during inference. Moreover, the memory demands of large models consistently outpace the memory capacity of contemporary GPUs. Addressing this, we introduce SiDA-MoE ($\textbf{S}$parsity-$\textbf{i}$nspired $\textbf{D}$ata-$\textbf{A}$ware), an efficient inference approach tailored for large MoE models. SiDA-MoE judiciously exploits both the system&#x27;s main memory, which is now abundant and readily scalable, and GPU memory by capitalizing on the inherent sparsity on expert activation in MoE models. By adopting a data-aware perspective, SiDA-MoE achieves enhanced model efficiency with a neglectable performance drop. Specifically, SiDA-MoE attains a remarkable speedup in MoE inference with up to $3.93\times$ throughput increasing, up to $72\%$ latency reduction, and up to $80\%$ GPU memory saving with down to $1\%$ performance drop. This work paves the way for scalable and efficient deployment of large MoE models, even with constrained resources. Code is available at: https://github.com/timlee0212/SiDA-MoE.</p>
 </details>
-<details><summary>Research topics this paper covers (17)</summary>
-<h3>Serving large MoE models under limited GPU memory</h3>
+<h2>Questions this paper answers (17)</h2>
+<h3>How can I run a Mixture-of-Experts model that does not fit in a single GPU&#x27;s memory?</h3>
 <p>If you work on deploying Mixture-of-Experts models whose parameters exceed GPU memory, SiDA-MoE keeps only predicted-active experts on the GPU and holds the rest in host main memory, reporting up to 80% GPU memory saving on Switch Transformers (Section 4.1, Figure 8).</p>
-<h3>Predicting expert activation before inference</h3>
+<p class="small">Topic: Serving large MoE models under limited GPU memory. Evidence: Abstract; Section 1; Section 4.1; Figure 8. Also asked as: Methods for reducing GPU memory footprint of MoE inference by keeping experts in CPU RAM</p>
+<h3>Can you predict which MoE experts a token will activate before running the model?</h3>
 <p>If you work on expert prefetching for MoE, this paper trains an offline predictor (called a hash function) that maps the input embedding sequence to the experts each token will use at every MoE layer, so experts can be loaded ahead of time instead of after each router call (Sections 3.2-3.3).</p>
-<h3>Replacing MoE routers with a learned predictor</h3>
+<p class="small">Topic: Predicting expert activation before inference. Evidence: Section 3.2 Challenge 1; Section 3.3; Algorithm 1. Also asked as: Look-ahead expert prefetching for mixture-of-experts inference</p>
+<h3>Can a small network approximate the router of a trained Switch Transformer?</h3>
 <p>If you study MoE gating, SiDA-MoE removes the routers from the forward pass entirely (they are offloaded to main memory) and substitutes the predictor&#x27;s expert choices and scaling factors, while noting fixed routers such as Hash layers or BASE layers can be plugged in directly (Sections 3.1, 3.3).</p>
-<h3>Pipelining expert selection with inference</h3>
+<p class="small">Topic: Replacing MoE routers with a learned predictor. Evidence: Section 3.1; Section 3.3. Also asked as: What happens to MoE accuracy if the gating function is replaced by an external predictor?</p>
+<h3>How to overlap MoE expert routing and CPU-GPU expert transfer with computation?</h3>
 <p>If you design MoE serving pipelines, the paper runs a hash-building thread that predicts expert tables for the next batch concurrently with the inference thread processing the current batch, with expert loading overlapped via pipeline parallelism and a FIFO expert cache under a memory budget (Section 3.1, Figure 5, Algorithm 1).</p>
-<h3>MoE inference overhead profiling</h3>
+<p class="small">Topic: Pipelining expert selection with inference. Evidence: Section 3.1; Figure 5; Algorithm 1; Section 4 Implementation. Also asked as: Two-thread producer-consumer design for mixture-of-experts serving</p>
+<h3>What fraction of MoE inference latency is spent on routing and expert dispatch?</h3>
 <p>If you profile MoE inference cost, this paper measures that expert selection, expert invocation and communication take up to 72% of inference time on Switch-base-256 at batch size 1, growing with expert count, and notes that at small batch sizes the number of experts invoked dominates latency (Section 2.3, Figure 3, Remark 1).</p>
-<h3>Sentence-level expert activation sparsity</h3>
+<p class="small">Topic: MoE inference overhead profiling. Evidence: Section 2.3; Figure 3; Remark 1. Also asked as: Why is mixture-of-experts inference slow at batch size 1?</p>
+<h3>How many experts does a single input sequence actually use in a Switch Transformer?</h3>
 <p>If you study expert usage patterns, the paper shows that even with load-balancing loss, a whole sentence activates fewer than 40% of experts in Switch-base-128 and fewer than 20% in Switch-base-256 on SST2, with idle ratios above 70% and 80% even for 80-token sentences (Section 2.4, Figure 4).</p>
-<h3>Effective GPU memory utilization of MoE</h3>
+<p class="small">Topic: Sentence-level expert activation sparsity. Evidence: Section 2.4; Figure 4. Also asked as: Is expert activation sparse at the sequence level despite load balancing?</p>
+<h3>How much GPU memory do inactive experts waste in MoE inference?</h3>
 <p>If you quantify memory waste in sparse models, the paper reports that MoE layers hold 78% to 99% of Switch Transformer parameters and that effective memory utilization can fall to about 5%, leaving roughly 24GB (Switch-base-128) and 50GB (Switch-base-256) idle on short SST2 inputs (Section 2.2, Table 2, Figure 2).</p>
-<h3>Sparse cross-token dependency of routing decisions</h3>
+<p class="small">Topic: Effective GPU memory utilization of MoE. Evidence: Section 2.2; Table 2; Figure 2. Also asked as: Memory breakdown of Switch Transformer parameters between expert and dense layers</p>
+<h3>Does a token&#x27;s expert routing depend on the rest of the sequence after self-attention?</h3>
 <p>If you analyze what determines MoE routing, the paper corrupts or permutes random fractions of other tokens on C4 with Switch-base-128 and uses a combinatorial estimate to infer that a token&#x27;s expert choice depends on only about 1 to 4 other tokens or positions (Section 3.4.1, Eq. 2, Figures 6-7).</p>
-<h3>LSTM with sparsemax attention predictor</h3>
+<p class="small">Topic: Sparse cross-token dependency of routing decisions. Evidence: Section 3.4.1; Equation 2; Figure 6; Figure 7. Also asked as: Which context tokens influence MoE router decisions?</p>
+<h3>Lightweight architectures for predicting MoE routing from token embeddings</h3>
 <p>If you need a lightweight sequence model that focuses on few inputs, the expert predictor is a 2-layer LSTM with self-attention whose weights use SparseMax, plus a residual connection from the current token, motivated by the sparse dependency finding (Section 3.4.2).</p>
-<h3>Truncated knowledge distillation of router logits</h3>
+<p class="small">Topic: LSTM with sparsemax attention predictor. Evidence: Section 3.4.2. Also asked as: Using sparsemax attention in an LSTM to focus on a few critical tokens</p>
+<h3>Top-k truncated knowledge distillation for a small student that cannot match the full teacher distribution</h3>
 <p>If you distill a large teacher&#x27;s softmax into a low-capacity student, the paper computes the KD loss only over the teacher&#x27;s top-T logits (T=30) and adds a cross-entropy term, because full-distribution KD degraded the small predictor (Section 3.5, Section 4 Hyperparameters).</p>
-<h3>Accuracy of expert activation prediction</h3>
+<p class="small">Topic: Truncated knowledge distillation of router logits. Evidence: Section 3.2 Challenge 3; Section 3.5; Section 4. Also asked as: How to train a predictor to approximate MoE gating scaling factors?</p>
+<h3>How accurately can expert routing be predicted in Switch Transformers?</h3>
 <p>If you need numbers on how predictable MoE routing is, top-3 hit rates of the predictor reach 99.00% (Switch-base-8, SST2) and 98.78% (Switch-base-128, SST2), dropping to about 90-92% on long MultiRC inputs (Section 4.6, Table 5).</p>
-<h3>Accuracy cost of approximate routing</h3>
+<p class="small">Topic: Accuracy of expert activation prediction. Evidence: Section 4.6; Table 5. Also asked as: Does expert prediction accuracy drop for longer input sequences?</p>
+<h3>How much does perplexity degrade when MoE experts are misrouted?</h3>
 <p>If you assess the quality cost of predicted routing, fidelity is 97.5-99% for Switch-base-8 but 92.6-93% for Switch-base-128 on SST2/MRPC/MultiRC, and C4 perplexity rises notably (e.g. 6.68 to 18.49 for Switch-base-8, 4.59 to 8.11 for Switch-base-256), with larger models more tolerant (Section 4.4-4.5, Tables 3-4).</p>
-<h3>Throughput and latency versus DeepSpeed and Tutel</h3>
+<p class="small">Topic: Accuracy cost of approximate routing. Evidence: Section 4.4; Section 4.5; Table 3; Table 4. Also asked as: Are larger MoE models more robust to wrong expert selection?</p>
+<h3>Benchmarks of MoE inference frameworks such as DeepSpeed-MoE and Tutel on Switch Transformers</h3>
 <p>If you compare MoE inference systems, SiDA-MoE reports 2.60x and 3.93x throughput over the baseline average for Switch-base-128/256 on SST2, but only 1.01-1.04x for Switch-base-8, with gains shrinking on long MultiRC inputs (1.26x, 1.57x) and latency reduced to about 25% on SST2/MRPC and 60% on MultiRC (Section 4.2, Figures 9-10).</p>
-<h3>Expert offloading versus model parallelism under memory budgets</h3>
+<p class="small">Topic: Throughput and latency versus DeepSpeed and Tutel. Evidence: Section 4.2; Figure 9; Figure 10. Also asked as: Does MoE inference speedup from expert offloading depend on sequence length and number of experts?</p>
+<h3>Throughput of MoE inference as a function of GPU memory budget</h3>
 <p>If you choose a strategy for a fixed GPU memory budget, the paper sweeps budgets from about 10 to 80GB on Switch-base-128/256 and finds data-aware expert offloading with a FIFO cache gives higher throughput than layer-wise model parallelism at every budget (Section 4.3, Figure 11).</p>
-<h3>Effect of input length on MoE memory savings</h3>
+<p class="small">Topic: Expert offloading versus model parallelism under memory budgets. Evidence: Section 4.3; Figure 11. Also asked as: Expert caching versus layer offloading for memory-constrained MoE serving</p>
+<h3>Do longer prompts reduce the benefit of expert offloading in MoE models?</h3>
 <p>If you care how sequence length interacts with expert sparsity, memory reduction exceeds 80% on short SST2 sentences but falls to over 40% (Switch-base-128) and 20% (Switch-base-256) per the text for 200-500 token MultiRC inputs, since longer inputs touch more experts (Section 4.1, Figure 8).</p>
-<h3>Hierarchical GPU-CPU-SSD expert offloading</h3>
+<p class="small">Topic: Effect of input length on MoE memory savings. Evidence: Section 4.1; Figure 8; Figure 4. Also asked as: Relationship between sequence length and number of activated experts</p>
+<h3>Offloading MoE experts to SSD for models larger than CPU memory</h3>
 <p>If you target trillion-scale MoE such as Switch-c-2048 (about 5TB), the discussion identifies host memory capacity as the limit and proposes GPU/main memory/SSD tiered expert offloading, plus a graph-structured predictor exploiting cross-layer activation dependencies (Section 6).</p>
-<h3>Positioning among MoE serving systems</h3>
+<p class="small">Topic: Hierarchical GPU-CPU-SSD expert offloading. Evidence: Section 6. Also asked as: Do expert activations in one MoE layer predict those in the next layer?</p>
+<h3>Survey of systems for efficient mixture-of-experts inference and expert offloading</h3>
 <p>If you survey efficient MoE inference, the related work contrasts SiDA-MoE&#x27;s data-aware look-ahead prediction with communication-focused systems (DeepSpeed-MoE, Tutel, SE-MoE), task-enforced sparsity (M3ViT, Edge-MoE) and expert-caching schedulers (EdgeMoE, dynamic expert swapping), and states it is orthogonal to quantization and pruning (Section 5).</p>
-<h3>Questions this paper answers</h3>
-<ul><li>How can I run a Mixture-of-Experts model that does not fit in a single GPU&#x27;s memory?</li><li>Methods for reducing GPU memory footprint of MoE inference by keeping experts in CPU RAM</li><li>Can you predict which MoE experts a token will activate before running the model?</li><li>Look-ahead expert prefetching for mixture-of-experts inference</li><li>Can a small network approximate the router of a trained Switch Transformer?</li><li>What happens to MoE accuracy if the gating function is replaced by an external predictor?</li><li>How to overlap MoE expert routing and CPU-GPU expert transfer with computation?</li><li>Two-thread producer-consumer design for mixture-of-experts serving</li><li>What fraction of MoE inference latency is spent on routing and expert dispatch?</li><li>Why is mixture-of-experts inference slow at batch size 1?</li><li>How many experts does a single input sequence actually use in a Switch Transformer?</li><li>Is expert activation sparse at the sequence level despite load balancing?</li><li>How much GPU memory do inactive experts waste in MoE inference?</li><li>Memory breakdown of Switch Transformer parameters between expert and dense layers</li><li>Does a token&#x27;s expert routing depend on the rest of the sequence after self-attention?</li><li>Which context tokens influence MoE router decisions?</li><li>Lightweight architectures for predicting MoE routing from token embeddings</li><li>Using sparsemax attention in an LSTM to focus on a few critical tokens</li><li>Top-k truncated knowledge distillation for a small student that cannot match the full teacher distribution</li><li>How to train a predictor to approximate MoE gating scaling factors?</li><li>How accurately can expert routing be predicted in Switch Transformers?</li><li>Does expert prediction accuracy drop for longer input sequences?</li><li>How much does perplexity degrade when MoE experts are misrouted?</li><li>Are larger MoE models more robust to wrong expert selection?</li><li>Benchmarks of MoE inference frameworks such as DeepSpeed-MoE and Tutel on Switch Transformers</li><li>Does MoE inference speedup from expert offloading depend on sequence length and number of experts?</li><li>Throughput of MoE inference as a function of GPU memory budget</li><li>Expert caching versus layer offloading for memory-constrained MoE serving</li><li>Do longer prompts reduce the benefit of expert offloading in MoE models?</li><li>Relationship between sequence length and number of activated experts</li><li>Offloading MoE experts to SSD for models larger than CPU memory</li><li>Do expert activations in one MoE layer predict those in the next layer?</li><li>Survey of systems for efficient mixture-of-experts inference and expert offloading</li><li>Can expert prediction be combined with quantization or expert caching policies for MoE?</li></ul>
-</details>
+<p class="small">Topic: Positioning among MoE serving systems. Evidence: Section 5; Table 1. Also asked as: Can expert prediction be combined with quantization or expert caching policies for MoE?</p>
 <details><summary>Citation (BibTeX)</summary>
 <pre>@inproceedings{du2024sida,
   title     = {SiDA: Sparsity-Inspired Data-Aware Serving for Efficient and Scalable Large Mixture-of-Experts Models},

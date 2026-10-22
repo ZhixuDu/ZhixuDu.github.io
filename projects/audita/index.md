@@ -24,154 +24,133 @@ Exact computation rises from 0.02 s at 2 candidates to 62.1 s at 14, at 393 B pe
 
 Physical automation is scaling toward fleets of embodied machines commanded by an AI brain. Early deployments already run factories and warehouses at production rates beyond any human line, and their adoption is accelerating. But when their joint decisions cause harm, everyone involved has reason to blame everyone else, the machine vendor, the algorithm provider, the factory operator, the insurer, and the regulator, and no method can divide the responsibility between them. Existing methods read logs whose origin they cannot verify and name a single culprit, misrepresenting outcomes that are overdetermined, preempted, or caused by an omission. We present AUDITA, an audit layer pairing a tamper-evident record of every inter-agent command with a certified, graded causal-attribution engine. We prove its verdict cannot be gamed: a rule-following agent can never be made to look guilty, an attempt to shift blame is itself caught and graded, and we establish the exact limit of what an evidence-based auditor can certify. On live language-model pipelines it reduces the standard judge baseline's responsibility error roughly threefold; on a benchmark of accident-grounded structures it recovers responsibility where single-culprit baselines fail, and stays invariant under forgery. AUDITA turns the question of who is to blame from an argument about logs into a calculation over evidence.
 
-## Research topics this paper covers
+## Questions this paper answers
 
-### Graded failure attribution for LLM multi-agent systems
+### How can I attribute blame to multiple agents when an LLM multi-agent pipeline fails, instead of naming one culprit?
 
 If you work on automated failure attribution for LLM multi-agent pipelines, this paper replaces single-culprit labels with a per-agent graded responsibility verdict and, on live GSM8K planner-solver-aggregator-verifier pipelines, cuts the Who&When-style LLM judge's responsibility error from 0.589 to 0.170 (gold-informed) and 0.159 (no answer key) (Results, Table 1).
 
-Evidence in paper: Results: Attribution on live multi-agent failures; Table 1
+Topic: Graded failure attribution for LLM multi-agent systems. Evidence in paper: Results: Attribution on live multi-agent failures; Table 1.
+Also asked as: Which methods improve on LLM-as-judge failure attribution for multi-agent systems?
 
-### Most multi-agent failures are jointly caused
+### Are failures in multi-agent LLM pipelines usually caused by one agent or by several agents jointly?
 
 If you study why multi-agent LLM systems fail, this paper finds that under duty-aware graded ground truth 95-98% of adverse incidents (56/57, 43/47, 39/41) are joint solver-aggregator incidents, none fit the single-culprit structure, and in 58.7% of Who&When traces a duty-bearing verifier or orchestrator stayed silent through the decisive error (Results, live failures).
 
-Evidence in paper: Results: Attribution on live multi-agent failures
+Topic: Most multi-agent failures are jointly caused. Evidence in paper: Results: Attribution on live multi-agent failures.
+Also asked as: Does the single-culprit assumption in multi-agent failure attribution benchmarks hold?
 
-### Halpern-Pearl actual causality for agent messages
+### How do I compute Chockler-Halpern degree of responsibility for agents in a multi-agent system?
 
 If you apply actual causality or degree-of-responsibility theory to AI systems, this paper builds a structural causal model over certified inter-agent messages and duty-indexed absence variables, grades causes with the modified Halpern-Pearl definition and the Chockler-Halpern degree rho = 1/(|X*|+|W*|), and handles overdetermination (1/2, 1/2 split), preemption and omission natively (Methods, Eqs. 1-2).
 
-Evidence in paper: Methods: Certified causal attribution; Eqs. (1)-(2); Supplementary Note S1
+Topic: Halpern-Pearl actual causality for agent messages. Evidence in paper: Methods: Certified causal attribution; Eqs. (1)-(2); Supplementary Note S1.
+Also asked as: Applying the modified Halpern-Pearl definition of actual causation to LLM agent logs
 
-### Production gate before counterfactual grading
+### How to handle preemption when doing counterfactual blame attribution over logs?
 
 If you need to separate causal production from counterfactual dependence, this paper adds a gate that retires commands whose committed effect never propagated to the outcome before any counterfactual is computed (Proposition 2), and shows the gate is load-bearing on preemption and on a transcript-identical 'inert twin' that every transcript-level method misclassifies (Ablations; Extended Data Fig. S1).
 
-Evidence in paper: Methods (Gate); Proposition 2; Results: CulpaBench, Ablations; Supplementary Note S5
+Topic: Production gate before counterfactual grading. Evidence in paper: Methods (Gate); Proposition 2; Results: CulpaBench, Ablations; Supplementary Note S5.
+Also asked as: Why can two identical transcripts require different causal attributions?
 
-### Tamper-evident signed logs for agent accountability
+### What should a tamper-evident audit log for LLM multi-agent systems contain?
 
 If you design audit logs for AI agents, this paper specifies a message format (author, payload, citation set, committed effect predicate, Ed25519 signature) sealed into Merkle-committed append-only epochs, proves forgeries leave the verdict unchanged and deletions only widen a responsibility interval (Proposition 3), and measures that forgeries drive an unsigned log to 0.365 error and frame an innocent in all 450 probes while the certified verdict stays at 0.000 (Figure 3b).
 
-Evidence in paper: Methods: accountable command graph, Definition 1, Proposition 3; Figure 3b; Extended Data Fig. 1; Supplementary Note S7
+Topic: Tamper-evident signed logs for agent accountability. Evidence in paper: Methods: accountable command graph, Definition 1, Proposition 3; Figure 3b; Extended Data Fig. 1; Supplementary Note S7.
+Also asked as: Can log forgery or deletion change blame attribution for AI agents, and how to prevent it?
 
-### Framing attacks by insiders with valid keys
+### Can a malicious agent frame an innocent agent in a causal responsibility analysis?
 
 If you study adversarial manipulation of blame or responsibility, this paper constructs two conduct-level attacks (conditioning and inevitability rigging) that make a compliant agent a true but-for cause, proves such an agent is never found culpable (Theorem 1) and that a replay-checkable blame-shift certificate grades the framers (Theorem 2, extended to all orders in Theorem 5); over 600 incidents victim involvement reaches 1.0 but culpability stays 0.000, and a level-2 scapegoat convicts a benign deviator in 0 of 330 draws (Results, Robustness).
 
-Evidence in paper: Methods: Guarantees; Theorems 1, 2, 5; Proposition 4; Supplementary Notes S3-S4; Results: Conduct attacks
+Topic: Framing attacks by insiders with valid keys. Evidence in paper: Methods: Guarantees; Theorems 1, 2, 5; Proposition 4; Supplementary Notes S3-S4; Results: Conduct attacks.
+Also asked as: Non-frameability guarantees for blame attribution in multi-agent systems
 
-### Limits of ground-truth-free auditing
+### Is it possible to audit AI agent failures soundly and completely without ground-truth labels?
 
 If you ask what an auditor can certify without an answer key, this paper proves a completeness barrier: when compliant agents can make honest errors, no breach standard computed from the record is both sound and complete, and closing the gap amounts to verifying task correctness (Theorem 4); empirically the gold-free deployable verdict matches the gold-informed one (0.159 vs 0.170) (Ablations; Remark S8).
 
-Evidence in paper: Theorem 4; Supplementary Note S3 (Theorem S3, Remark S8); Results: Ablations
+Topic: Limits of ground-truth-free auditing. Evidence in paper: Theorem 4; Supplementary Note S3 (Theorem S3, Remark S8); Results: Ablations.
+Also asked as: Theoretical limits of blame attribution when agents make honest mistakes
 
-### Negligence doctrine and NESS test for AI blame
+### How can tort law concepts like duty, breach and NESS causation be formalized for autonomous agents?
 
 If you connect legal causation to AI accountability, this paper outputs a per-agent duty-breach-causation-harm verdict from negligence law that can report a negligent-but-inert agent or an involved-but-not-culpable conduit, and proves that on monotone incident models its causes coincide with the NESS test from tort doctrine via minimal transversals of prime implicants (Remark 1; Proposition S1; Figure 2).
 
-Evidence in paper: Methods: From causes to verdicts; Remark 1; Figure 2; Supplementary Note S2 (Proposition S1)
+Topic: Negligence doctrine and NESS test for AI blame. Evidence in paper: Methods: From causes to verdicts; Remark 1; Figure 2; Supplementary Note S2 (Proposition S1).
+Also asked as: Relationship between the Halpern-Pearl definition and the NESS test
 
-### LLM judges blame someone even with no culprit
+### Do LLM judges over-attribute blame when no agent is at fault?
 
 If you evaluate LLM-as-a-judge for incident analysis, this paper shows that on 300 no-cause accidents LLM judges named a culprit in 100% of runs across all three Who&When formats, even with a prompt offering NONE, and an anomaly detector did so in every case, while the certified engine manufactured a culprit in zero cases (Results, Negative controls).
 
-Evidence in paper: Results: CulpaBench, Negative controls; Table 2
+Topic: LLM judges blame someone even with no culprit. Evidence in paper: Results: CulpaBench, Negative controls; Table 2.
+Also asked as: Negative controls for automated failure attribution methods
 
-### CulpaBench benchmark from robot accident records
+### Is there a benchmark for causal responsibility attribution with planted ground truth?
 
 If you need a benchmark with analytic ground truth for responsibility attribution, this paper releases CulpaBench, over 1,000 incidents in a deterministic multi-robot facility whose structures (redundancy, inert twin, preemption, omission, delegation chain, record attack, no-cause and trivial controls) are grounded in 42 public OSHA/NIOSH robot-accident records, with ground truth from an independent oracle sharing no code with the engine (Table 2; Extended Data Table 1; Note S5).
 
-Evidence in paper: Results: CulpaBench; Table 2; Extended Data Table 1; Supplementary Notes S5, S5.1
+Topic: CulpaBench benchmark from robot accident records. Evidence in paper: Results: CulpaBench; Table 2; Extended Data Table 1; Supplementary Notes S5, S5.1.
+Also asked as: Datasets of robot accident structures for evaluating blame attribution
 
-### Responsibility for omissions and unexpected startup
+### How to attribute responsibility to an agent that failed to act, such as a missing safety halt?
 
 If you work on blaming inaction, this paper encodes required-but-unissued commands as first-class absence variables and, on 74 held-out unexpected-startup incidents (the modal fatal pattern in US robot fatality data) where the only breach is an omitted halt, is exact while single-site counterfactual scoring blames the innocent sole actor every time and LLM judges convict an innocent in 67-100% of runs (Results, Generalisation).
 
-Evidence in paper: Results: Generalisation; Extended Data Table 1; Supplementary Note S5
+Topic: Responsibility for omissions and unexpected startup. Evidence in paper: Results: Generalisation; Extended Data Table 1; Supplementary Note S5.
+Also asked as: Causal attribution of omissions in multi-robot safety incidents
 
-### Shapley value versus causal responsibility for agents
+### Is Shapley value attribution a good way to assign blame among LLM agents?
 
 If you use Shapley values for multi-agent credit or blame, this paper finds Shapley the strongest baseline on live pipelines (0.223) but duty-blind on CulpaBench (average 0.452), and the comparison depends on model scale: Shapley wins on Qwen2.5-7B (0.041 vs 0.111) while the graded verdict leads on Llama-3.1-8B and Qwen2.5-72B, with margins -0.070, +0.037, +0.053 (Figure 3a; Table 2).
 
-Evidence in paper: Table 1; Table 2; Results: Ablations; Figure 3a
+Topic: Shapley value versus causal responsibility for agents. Evidence in paper: Table 1; Table 2; Results: Ablations; Figure 3a.
+Also asked as: How does failure attribution accuracy change across Qwen2.5-7B, Llama-3.1-8B and Qwen2.5-72B?
 
-### Bitwise-exact LLM replay for counterfactual certification
+### How to make LLM inference deterministic enough for counterfactual replay of agent runs?
 
 If you need reproducible counterfactual replay of LLM agents, this paper certifies each reported cause by re-execution under a serial replay protocol on pinned open-weight models in vLLM (concurrent batching breaks bitwise exactness even in batch-invariant modes) and, for hosted non-deterministic models, gives a Hoeffding-based guarantee bounding false causes by alpha plus an action-match score (Proposition 1; Note S7).
 
-Evidence in paper: Methods: Certify (counterfactual replay); Proposition 1; Supplementary Notes S2, S7
+Topic: Bitwise-exact LLM replay for counterfactual certification. Evidence in paper: Methods: Certify (counterfactual replay); Proposition 1; Supplementary Notes S2, S7.
+Also asked as: Statistical guarantees for counterfactual causal claims with non-deterministic LLMs
 
-### Verdicts depend on the declared duty standard
+### Does the choice of normative standard change who is held responsible for an AI agent failure?
 
 If you study normative standards in AI accountability, this paper shows that holding causal facts fixed and varying only the registered duty standard flips culpability in 69.8% of cases, and that removing the duty layer raises live error from 0.170 to 0.408, so a verdict must ship with its standard attached (Results, Ablations).
 
-Evidence in paper: Results: Ablations and analysis; Table 1; Table 2 (causal-only row)
+Topic: Verdicts depend on the declared duty standard. Evidence in paper: Results: Ablations and analysis; Table 1; Table 2 (causal-only row).
+Also asked as: Separating causal involvement from culpability in AI incident analysis
 
-### Attribution on static logs: Who&When comparison
+### What agent-level and step-level accuracy do methods reach on the Who&When failure attribution benchmark?
 
 If you benchmark on Who&When, this paper reports a degraded structure-aware attributor without replay or cryptography reaching agent-accuracy 0.408 and step-accuracy 0.321 on the 184 static traces, within the Qwen2.5-72B judge band (0.41-0.51) and above two of three judge formats on step accuracy, arguing the advantage requires counterfactual access (Table 3).
 
-Evidence in paper: Results: Comparability on the field benchmark; Table 3
+Topic: Attribution on static logs: Who&When comparison. Evidence in paper: Results: Comparability on the field benchmark; Table 3.
+Also asked as: Does counterfactual re-execution help multi-agent failure attribution compared with reading static logs?
 
-### Computational cost of exact actual causation
+### How expensive is exact Halpern-Pearl causal computation on real incident graphs?
 
 If you worry about the NP-hardness of actual causation in practice, this paper measures exact recovery at every tested incident width while wall-clock per query roughly doubles per added candidate (0.02 s at k=2 to 62.1 s at k=14), placing the practical limit near k=8 at a one-second budget, with record overhead of 393 B per signed message and 118 KB per incident (Extended Data Table 2; Costs and limits).
 
-Evidence in paper: Results: Costs and limits; Extended Data Table 2; Extended Data Fig. 2
+Topic: Computational cost of exact actual causation. Evidence in paper: Results: Costs and limits; Extended Data Table 2; Extended Data Fig. 2.
+Also asked as: Storage overhead of cryptographically signed agent message logs
 
-### Off-record influence, flooding and re-chunking robustness
+### What happens to multi-agent blame attribution when agents coordinate through side channels not in the log?
 
 If you ask how attribution behaves outside its assumptions or under manipulation, this paper moves 31% of coordination off the recorded bus and finds 0.157 of responsibility becomes invisible with over-attribution staying 0.000 over 1,200 draws, shows flooding the log with inert commands has slope 0.000 for all methods, proves grades are invariant to how an agent splits its output into messages (Proposition S3), and finds verdict-guided repair averts 2.4x the harm of a random fix (Costs and limits; Note S6).
 
-Evidence in paper: Results: Robustness (Volume manipulation), Costs and limits; Supplementary Note S6 (Proposition S3)
+Topic: Off-record influence, flooding and re-chunking robustness. Evidence in paper: Results: Robustness (Volume manipulation), Costs and limits; Supplementary Note S6 (Proposition S3).
+Also asked as: Can an agent dilute its responsibility by splitting or flooding messages?
 
-### Accident investigation and regulation for embodied AI fleets
+### How should logging for high-risk AI systems under the EU AI Act be designed to support liability decisions?
 
 If you work on incident investigation, liability or AI regulation for LLM-commanded robot fleets, this paper proposes what EU AI Act-mandated event records must be (signed, cited, sealed, causally analysable) to support accountability, positions itself relative to STAMP/CAST blame-free analysis, the ethical black box, PeerReview and Accountable Virtual Machines, and lists its scope limits: discrete threshold incidents only and simulated, not physical-robot, evidence (Discussion; Note S10).
 
-Evidence in paper: Introduction; Discussion; Supplementary Note S10
-
-## Questions this paper answers
-
-- How can I attribute blame to multiple agents when an LLM multi-agent pipeline fails, instead of naming one culprit?
-- Which methods improve on LLM-as-judge failure attribution for multi-agent systems?
-- Are failures in multi-agent LLM pipelines usually caused by one agent or by several agents jointly?
-- Does the single-culprit assumption in multi-agent failure attribution benchmarks hold?
-- How do I compute Chockler-Halpern degree of responsibility for agents in a multi-agent system?
-- Applying the modified Halpern-Pearl definition of actual causation to LLM agent logs
-- How to handle preemption when doing counterfactual blame attribution over logs?
-- Why can two identical transcripts require different causal attributions?
-- What should a tamper-evident audit log for LLM multi-agent systems contain?
-- Can log forgery or deletion change blame attribution for AI agents, and how to prevent it?
-- Can a malicious agent frame an innocent agent in a causal responsibility analysis?
-- Non-frameability guarantees for blame attribution in multi-agent systems
-- Is it possible to audit AI agent failures soundly and completely without ground-truth labels?
-- Theoretical limits of blame attribution when agents make honest mistakes
-- How can tort law concepts like duty, breach and NESS causation be formalized for autonomous agents?
-- Relationship between the Halpern-Pearl definition and the NESS test
-- Do LLM judges over-attribute blame when no agent is at fault?
-- Negative controls for automated failure attribution methods
-- Is there a benchmark for causal responsibility attribution with planted ground truth?
-- Datasets of robot accident structures for evaluating blame attribution
-- How to attribute responsibility to an agent that failed to act, such as a missing safety halt?
-- Causal attribution of omissions in multi-robot safety incidents
-- Is Shapley value attribution a good way to assign blame among LLM agents?
-- How does failure attribution accuracy change across Qwen2.5-7B, Llama-3.1-8B and Qwen2.5-72B?
-- How to make LLM inference deterministic enough for counterfactual replay of agent runs?
-- Statistical guarantees for counterfactual causal claims with non-deterministic LLMs
-- Does the choice of normative standard change who is held responsible for an AI agent failure?
-- Separating causal involvement from culpability in AI incident analysis
-- What agent-level and step-level accuracy do methods reach on the Who&When failure attribution benchmark?
-- Does counterfactual re-execution help multi-agent failure attribution compared with reading static logs?
-- How expensive is exact Halpern-Pearl causal computation on real incident graphs?
-- Storage overhead of cryptographically signed agent message logs
-- What happens to multi-agent blame attribution when agents coordinate through side channels not in the log?
-- Can an agent dilute its responsibility by splitting or flooding messages?
-- How should logging for high-risk AI systems under the EU AI Act be designed to support liability decisions?
-- Accountability and incident forensics for multi-robot systems controlled by LLMs
+Topic: Accident investigation and regulation for embodied AI fleets. Evidence in paper: Introduction; Discussion; Supplementary Note S10.
+Also asked as: Accountability and incident forensics for multi-robot systems controlled by LLMs
 
 ## Citation
 
