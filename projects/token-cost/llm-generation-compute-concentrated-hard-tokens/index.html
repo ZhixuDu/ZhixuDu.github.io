@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Is LLM Generation Compute Concentrated in a Few Hard Tokens? | Token cost (MoA)</title>
+<meta name="description" content="By sufficient compute, yes: the costliest 10% of tokens carried 63.66-79.54% of estimated FLOPs in the Qwen2.5 panel and 63.75-69.37% for OLMo-2.">
+<link rel="canonical" href="https://zhixudu.github.io/projects/token-cost/llm-generation-compute-concentrated-hard-tokens/">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "Is LLM Generation Compute Concentrated in a Few Hard Tokens?", "description": "By sufficient compute, yes: the costliest 10% of tokens carried 63.66-79.54% of estimated FLOPs in the Qwen2.5 panel and 63.75-69.37% for OLMo-2.", "about": "Heavy-tailed concentration of per-token compute", "url": "https://zhixudu.github.io/projects/token-cost/llm-generation-compute-concentrated-hard-tokens/", "dateModified": "2026-11-10", "author": [{"@type": "Person", "name": "Zhixu Du"}, {"@type": "Person", "name": "Weijia Han"}, {"@type": "Person", "name": "Hai (Helen) Li"}, {"@type": "Person", "name": "Yiran Chen"}], "isBasedOn": {"@type": "ScholarlyArticle", "name": "What Does a Token Cost? A Mixture-of-Agents Measurement of Sufficient Per-Token Compute", "url": "https://arxiv.org/abs/2610.02491"}}</script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=IBM+Plex+Sans:wght@500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+/* Layout: single reading column, publication list as ruled entries, venue as a small stamp. */
+:root{
+  --paper:#f7f6f2;--ink:#1b1d22;--muted:#5d6068;--rule:#dcdad3;--card:#ffffff;--accent:#1f4e79;
+  --serif:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#15171b;--ink:#e7e6e1;--muted:#a3a5ab;--rule:#2b2e34;--card:#1c1f24;--accent:#8fb8e0;color-scheme:dark}}
+:root[data-theme="dark"]{--paper:#15171b;--ink:#e7e6e1;--muted:#a3a5ab;--rule:#2b2e34;--card:#1c1f24;--accent:#8fb8e0;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.65 var(--serif)}
+main{max-width:44rem;margin:0 auto;padding-inline:1.25rem;padding-block:2.5rem 4rem}
+a{color:var(--accent);text-underline-offset:2px}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1{font-size:1.85rem;line-height:1.25;margin:0;text-wrap:balance;font-weight:600}
+h2{font:600 .78rem var(--sans);text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin:2.4rem 0 .8rem;padding-top:.8rem;border-top:1px solid var(--rule)}
+h3{font:600 1rem var(--sans);margin:1.2rem 0 .2rem}
+p{max-width:65ch}
+.meta,.small{color:var(--muted);font-size:.92rem}
+.venue{display:inline-block;font:600 .74rem var(--sans);letter-spacing:.04em;color:var(--accent);border:1px solid currentColor;border-radius:3px;padding:.05rem .45rem}
+.links{display:flex;flex-wrap:wrap;gap:.3rem 1rem;font:500 .88rem var(--sans)}
+.head{display:grid;gap:.6rem;margin-bottom:.4rem}
+.pub{display:grid;gap:.3rem;padding-block:1.1rem;border-bottom:1px solid var(--rule)}
+.pub .t{font-weight:600;line-height:1.35}
+.pub .t a{color:var(--ink);text-decoration:none}
+.pub .t a:hover{color:var(--accent)}
+pre{background:var(--card);border:1px solid var(--rule);padding:1rem;overflow-x:auto;font:.78rem/1.5 var(--mono)}
+nav{display:flex;gap:1rem;font:500 .88rem var(--sans);margin-bottom:2rem}
+nav a{text-decoration:none}
+details{margin-top:2.4rem;padding-top:.8rem;border-top:1px solid var(--rule)}
+summary{cursor:pointer;font:600 .78rem var(--sans);text-transform:uppercase;letter-spacing:.09em;color:var(--muted)}
+summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.lede{font-size:1.08rem;color:var(--muted)}
+table{border-collapse:collapse;width:100%;font:.9rem/1.45 var(--sans)}
+.tw{overflow-x:auto}
+td,th{text-align:left;vertical-align:top;padding:.45rem .6rem .45rem 0;border-bottom:1px solid var(--rule)}
+th{font-weight:600;color:var(--muted)}
+td:first-child{font-variant-numeric:tabular-nums;white-space:nowrap;font-weight:600}
+ul.rel{padding-left:1.1rem}
+</style>
+</head>
+<body>
+<main>
+<nav><a href="https://zhixudu.github.io/">&larr; Zhixu Du</a><a href="https://zhixudu.github.io/projects/token-cost/">Token cost (MoA) paper page</a></nav>
+<div class="head"><div><span class="venue">Under review</span></div>
+<h1>Is LLM Generation Compute Concentrated in a Few Hard Tokens?</h1>
+<p class="lede">Is the compute needed for LLM generation concentrated in a few hard tokens?</p></div>
+<h2>Answer</h2>
+<p>By the sufficient-compute measure, yes. Du et al. (2026) assign each reference token the FLOPs of the cheapest panel model that reproduces it and find that the most expensive 10% of tokens account for 63.66-79.54% of estimated FLOPs in the Qwen2.5 panel, 63.75-69.37% in OLMo-2 and 67.19-74.76% in DeepSeek-R1-Distill-Qwen, across GSM8K, MATH-500 and HumanEval. The top 1% of tokens account for 52.94-60.14%, 16.25-19.87% and 11.47-15.02% respectively.</p><p>The concentration follows from the reproduction pattern. Most tokens are reproduced by the smallest model, for example 91.86-95.24% by Qwen2.5-0.5B, while a small set needs a much larger model or none in the panel. Tokens are ordered by cost, and the top-p share divides their cumulative cost by the total over all reference tokens. Per dataset in the Qwen panel, the top 1% and top 10% shares are 56.86% and 79.54% on GSM8K, 60.14% and 71.98% on MATH-500, and 52.94% and 63.66% on HumanEval. Qwen shows sharper concentration in the top percentile, consistent with its wider range from 0.5B to 72B.</p><p>These all-token shares price each unresolved token at twice the FLOPs of the panel&#x27;s largest model, an assumption made for the plots. Excluding unresolved tokens lowers the shares but leaves allocation uneven: the top 10% of resolved tokens hold 51-60% for Qwen2.5, 40-44% for OLMo-2 and 26-32% for R1-Distill-Qwen, with resolved-only Gini coefficients from 0.218 to 0.547.</p><p>The expensive tail is not easy to spot from the surface: digit and operator indicators, word length, frequency and position explain only 2.5-3.2% of the variance in ranked reproduction demand. Different model families do, however, partly agree on which positions are expensive.</p>
+<h2>Key numbers</h2>
+<div class="tw"><table><thead><tr><th>Value</th><th>Meaning</th><th>Where in the paper</th></tr></thead><tbody><tr><td>63.66–79.54%</td><td>top-10% FLOP share, Qwen2.5 panel</td><td>Section 4.1, Table A6</td></tr><tr><td>63.75–69.37%</td><td>top-10% FLOP share, OLMo-2 panel</td><td>Section 4.1, Table A6</td></tr><tr><td>67.19–74.76%</td><td>top-10% FLOP share, R1-Distill-Qwen panel</td><td>Section 4.1, Table A6</td></tr><tr><td>52.94–60.14%</td><td>top-1% FLOP share, Qwen2.5 panel</td><td>Section 4.1, Table A6</td></tr></tbody></table></div>
+<h2>Setup</h2>
+<p>Measurement panels of fifteen models: Qwen2.5 (0.5B to 72B, seven sizes), OLMo-2 (1B, 7B, 13B, 32B) and DeepSeek-R1-Distill-Qwen (1.5B, 7B, 14B, 32B), with Falcon3 (1B, 3B, 7B, 10B) for cross-family replication. References are checker-verified responses from Qwen2.5-72B-Instruct (four samples per prompt at temperature 0.7, top-p 0.95, earliest passing sample kept), with Llama-3.3-70B-Instruct as a second generator. Core datasets are GSM8K, MATH-500 and HumanEval (1,800 Qwen-written references: 1,281, 375 and 144), within twelve benchmarks totaling 50,019 prompts. Teacher-forced scoring runs in vLLM 0.14.1 with BF16 on eight 80 GB A100-SXM4 GPUs; uncertainty uses 2,000 item-bootstrap resamples.</p>
+<p class="small">Shares use architecture-derived logical FLOPs on Qwen-written verified references, with unresolved tokens priced at twice the largest panel model in the all-token figures.</p>
+<h2>Source</h2>
+<p><a href="https://zhixudu.github.io/projects/token-cost/">What Does a Token Cost? A Mixture-of-Agents Measurement of Sufficient Per-Token Compute</a>. Zhixu Du, Weijia Han, Hai (Helen) Li, Yiran Chen. Under review, 2026. Evidence: Section 4.1, Figure 3, Table A6.</p>
+<div class="links"><a href="https://arxiv.org/abs/2610.02491">arXiv</a> <a href="https://arxiv.org/pdf/2610.02491">PDF</a> <a href="https://zhixudu.github.io/projects/token-cost/citation.bib">BibTeX</a></div>
+<h2>Related questions</h2><ul class="rel"><li><a href="https://zhixudu.github.io/projects/token-cost/unresolved-tokens-gini-per-token-compute/">Unresolved Tokens and Gini Inequality of Per-Token Compute</a></li><li><a href="https://zhixudu.github.io/projects/token-cost/small-model-reproduces-large-model-tokens-teacher-forcing/">How Many Large-Model Tokens a 0.5B Model Can Reproduce</a></li><li><a href="https://zhixudu.github.io/projects/token-cost/token-type-predict-tokens-needing-larger-model/">Do Numbers or Punctuation Predict Tokens Needing Larger Models?</a></li></ul>
+<details><summary>Citation (BibTeX)</summary>
+<pre>@misc{du2026token,
+  title         = {What Does a Token Cost? A Mixture-of-Agents Measurement of Sufficient Per-Token Compute},
+  author        = {Du, Zhixu and Han, Weijia and Li, Hai and Chen, Yiran},
+  year          = {2026},
+  eprint        = {2610.02491},
+  archivePrefix = {arXiv},
+  url           = {https://arxiv.org/abs/2610.02491}
+}
+</pre>
+</details>
+
+</main>
+</body>
+</html>

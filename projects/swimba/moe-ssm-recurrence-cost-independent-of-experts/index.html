@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Scaling Mamba Parameters With Experts Without Extra Scans | Swimba</title>
+<meta name="description" content="Yes. If experts are mixed in parameter space, the scan runs once: cost is O(T C_step + T C_mix) versus O(T E C_step) for one scan per expert.">
+<link rel="canonical" href="https://zhixudu.github.io/projects/swimba/moe-ssm-recurrence-cost-independent-of-experts/">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "Scaling Mamba Parameters With Experts Without Extra Scans", "description": "Yes. If experts are mixed in parameter space, the scan runs once: cost is O(T C_step + T C_mix) versus O(T E C_step) for one scan per expert.", "about": "Single recurrence cost independent of expert count", "url": "https://zhixudu.github.io/projects/swimba/moe-ssm-recurrence-cost-independent-of-experts/", "dateModified": "2026-11-10", "author": [{"@type": "Person", "name": "Zhixu Du"}, {"@type": "Person", "name": "Krishna Teja Chitty-Venkata"}, {"@type": "Person", "name": "Murali Emani"}, {"@type": "Person", "name": "Venkatram Vishwanath"}, {"@type": "Person", "name": "Hai (Helen) Li"}, {"@type": "Person", "name": "Yiran Chen"}], "isBasedOn": {"@type": "ScholarlyArticle", "name": "Swimba: Switch Mamba Model Scales State Space Models", "url": "https://arxiv.org/abs/2603.06938"}}</script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=IBM+Plex+Sans:wght@500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+/* Layout: single reading column, publication list as ruled entries, venue as a small stamp. */
+:root{
+  --paper:#f7f6f2;--ink:#1b1d22;--muted:#5d6068;--rule:#dcdad3;--card:#ffffff;--accent:#1f4e79;
+  --serif:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#15171b;--ink:#e7e6e1;--muted:#a3a5ab;--rule:#2b2e34;--card:#1c1f24;--accent:#8fb8e0;color-scheme:dark}}
+:root[data-theme="dark"]{--paper:#15171b;--ink:#e7e6e1;--muted:#a3a5ab;--rule:#2b2e34;--card:#1c1f24;--accent:#8fb8e0;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.65 var(--serif)}
+main{max-width:44rem;margin:0 auto;padding-inline:1.25rem;padding-block:2.5rem 4rem}
+a{color:var(--accent);text-underline-offset:2px}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1{font-size:1.85rem;line-height:1.25;margin:0;text-wrap:balance;font-weight:600}
+h2{font:600 .78rem var(--sans);text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin:2.4rem 0 .8rem;padding-top:.8rem;border-top:1px solid var(--rule)}
+h3{font:600 1rem var(--sans);margin:1.2rem 0 .2rem}
+p{max-width:65ch}
+.meta,.small{color:var(--muted);font-size:.92rem}
+.venue{display:inline-block;font:600 .74rem var(--sans);letter-spacing:.04em;color:var(--accent);border:1px solid currentColor;border-radius:3px;padding:.05rem .45rem}
+.links{display:flex;flex-wrap:wrap;gap:.3rem 1rem;font:500 .88rem var(--sans)}
+.head{display:grid;gap:.6rem;margin-bottom:.4rem}
+.pub{display:grid;gap:.3rem;padding-block:1.1rem;border-bottom:1px solid var(--rule)}
+.pub .t{font-weight:600;line-height:1.35}
+.pub .t a{color:var(--ink);text-decoration:none}
+.pub .t a:hover{color:var(--accent)}
+pre{background:var(--card);border:1px solid var(--rule);padding:1rem;overflow-x:auto;font:.78rem/1.5 var(--mono)}
+nav{display:flex;gap:1rem;font:500 .88rem var(--sans);margin-bottom:2rem}
+nav a{text-decoration:none}
+details{margin-top:2.4rem;padding-top:.8rem;border-top:1px solid var(--rule)}
+summary{cursor:pointer;font:600 .78rem var(--sans);text-transform:uppercase;letter-spacing:.09em;color:var(--muted)}
+summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.lede{font-size:1.08rem;color:var(--muted)}
+table{border-collapse:collapse;width:100%;font:.9rem/1.45 var(--sans)}
+.tw{overflow-x:auto}
+td,th{text-align:left;vertical-align:top;padding:.45rem .6rem .45rem 0;border-bottom:1px solid var(--rule)}
+th{font-weight:600;color:var(--muted)}
+td:first-child{font-variant-numeric:tabular-nums;white-space:nowrap;font-weight:600}
+ul.rel{padding-left:1.1rem}
+</style>
+</head>
+<body>
+<main>
+<nav><a href="https://zhixudu.github.io/">&larr; Zhixu Du</a><a href="https://zhixudu.github.io/projects/swimba/">Swimba paper page</a></nav>
+<div class="head"><div><span class="venue">NeurIPS 2026</span></div>
+<h1>Scaling Mamba Parameters With Experts Without Extra Scans</h1>
+<p class="lede">Can you scale parameters of a Mamba layer with experts without running multiple scans?</p></div>
+<h2>Answer</h2>
+<p>Yes, if the experts are mixed before the recurrence instead of after it. In Swimba (Du et al., 2026), Theorem 2 states that the MoE-parameterized SSM layer costs O(T C_step(N, P) + T C_mix(k, P)), where T is sequence length, C_step is the cost of one state update with state size N and P channels, and C_mix is the cost of mixing at most k active expert streams per step. A separated MoE that advances all E expert states each step costs O(T E C_step(N, P)). Adding experts therefore adds parameters but does not multiply the expensive part of the computation.</p><p>The proof is direct. The parameter-mixed layer forms mixed injection and readout terms, Σ π_{t,e} B^(e)_t X^(e)_t and Σ π_{t,e} C^(e)_t, and then advances a single state trajectory for T steps. The separated design advances E trajectories per step. The extra work in the mixed design is confined to routing, the expert projections and the mixing sums. Theorem 1 complements this by showing the mixed layer is exactly one selective SSM with state size N, so Mamba-2&#x27;s SSD kernel is reused unchanged.</p><p>The Swimba implementation places the experts in the Mamba-2 in-projection and uses top-1 routing, so each token runs one expert projection. In Swimba-14B (4 experts per layer, built on Nemotron-H-8B), the PyTorch profiler measures 1.51282 × 10^10 FLOPs per token versus 1.51263 × 10^10 for the baseline, a difference under 0.2%.</p><p>Wall-clock cost is a separate question. In vLLM decoding on a 40GB A100, Swimba-14B is slightly slower than Nemotron-H-8B, with as low as a 10% slowdown, which the authors attribute to routing overhead rather than to the recurrence.</p>
+<h2>Key numbers</h2>
+<div class="tw"><table><thead><tr><th>Value</th><th>Meaning</th><th>Where in the paper</th></tr></thead><tbody><tr><td>O(T C_step + T C_mix)</td><td>Forward cost of the parameter-mixed MoE-SSM layer</td><td>Theorem 2</td></tr><tr><td>O(T E C_step)</td><td>Forward cost of a separated MoE advancing E expert states</td><td>Theorem 2</td></tr><tr><td>0.2%</td><td>FLOPs difference between Swimba-14B and Nemotron-H-8B (less than)</td><td>Section 5.2</td></tr><tr><td>10%</td><td>Smallest reported vLLM slowdown of Swimba-14B vs baseline</td><td>Section 5.2</td></tr></tbody></table></div>
+<h2>Setup</h2>
+<p>Theoretical analysis of a selective SSM h_t = A h_{t-1} + B_t X_t, Y_t = C_t^T h_t with state size N, P channels, E experts, softmax routing probabilities and a dense or top-k active set; proofs are in Appendix A of the paper. The architecture is instantiated on Mamba-2 and evaluated as Swimba-14B (4 experts, top-1) built on Nemotron-H-8B.</p>
+<p class="small">The complexity result is asymptotic in T and E; the empirical FLOPs check covers one configuration with 4 experts and top-1 routing.</p>
+<h2>Source</h2>
+<p><a href="https://zhixudu.github.io/projects/swimba/">Swimba: Switch Mamba Model Scales State Space Models</a>. Zhixu Du, Krishna Teja Chitty-Venkata, Murali Emani, Venkatram Vishwanath, Hai (Helen) Li, Yiran Chen. Advances in Neural Information Processing Systems 39 (NeurIPS 2026), 2026. Evidence: Section 3.4 Theorem 2, Appendix A.2.</p>
+<div class="links"><a href="https://arxiv.org/abs/2603.06938">arXiv</a> <a href="https://arxiv.org/pdf/2603.06938">PDF</a> <a href="https://zhixudu.github.io/projects/swimba/citation.bib">BibTeX</a></div>
+<h2>Related questions</h2><ul class="rel"><li><a href="https://zhixudu.github.io/projects/swimba/mixing-expert-outputs-vs-parameters-ssm/">Output Mixing vs Parameter Mixing in MoE State Space Models</a></li><li><a href="https://zhixudu.github.io/projects/swimba/moe-routing-mamba2-ssd-kernel-compatibility/">MoE Routing Compatible With the Mamba-2 SSD Kernel</a></li><li><a href="https://zhixudu.github.io/projects/swimba/flops-per-token-top1-moe-mamba-layer/">FLOPs per Token of a Top-1 MoE Mamba Layer</a></li></ul>
+<details><summary>Citation (BibTeX)</summary>
+<pre>@inproceedings{du2026swimba,
+  title     = {Swimba: Switch Mamba Model Scales State Space Models},
+  author    = {Du, Zhixu and Chitty-Venkata, Krishna Teja and Emani, Murali and Vishwanath, Venkatram and Li, Hai and Chen, Yiran},
+  booktitle = {Advances in Neural Information Processing Systems 39 (NeurIPS 2026)},
+  year      = {2026},
+  url       = {https://arxiv.org/abs/2603.06938}
+}
+</pre>
+</details>
+
+</main>
+</body>
+</html>

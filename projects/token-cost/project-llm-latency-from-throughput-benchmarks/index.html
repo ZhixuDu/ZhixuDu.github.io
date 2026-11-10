@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Projecting LLM Decoding Latency from Throughput Benchmarks | Token cost (MoA)</title>
+<meta name="description" content="Fit a per-call cost and a per-position cost to published whole-request timings, then apply them to recorded calls; the fit had 2.13% maximum error.">
+<link rel="canonical" href="https://zhixudu.github.io/projects/token-cost/project-llm-latency-from-throughput-benchmarks/">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "Projecting LLM Decoding Latency from Throughput Benchmarks", "description": "Fit a per-call cost and a per-position cost to published whole-request timings, then apply them to recorded calls; the fit had 2.13% maximum error.", "about": "Latency projection from published throughput benchmarks", "url": "https://zhixudu.github.io/projects/token-cost/project-llm-latency-from-throughput-benchmarks/", "dateModified": "2026-11-10", "author": [{"@type": "Person", "name": "Zhixu Du"}, {"@type": "Person", "name": "Weijia Han"}, {"@type": "Person", "name": "Hai (Helen) Li"}, {"@type": "Person", "name": "Yiran Chen"}], "isBasedOn": {"@type": "ScholarlyArticle", "name": "What Does a Token Cost? A Mixture-of-Agents Measurement of Sufficient Per-Token Compute", "url": "https://arxiv.org/abs/2610.02491"}}</script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=IBM+Plex+Sans:wght@500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+/* Layout: single reading column, publication list as ruled entries, venue as a small stamp. */
+:root{
+  --paper:#f7f6f2;--ink:#1b1d22;--muted:#5d6068;--rule:#dcdad3;--card:#ffffff;--accent:#1f4e79;
+  --serif:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#15171b;--ink:#e7e6e1;--muted:#a3a5ab;--rule:#2b2e34;--card:#1c1f24;--accent:#8fb8e0;color-scheme:dark}}
+:root[data-theme="dark"]{--paper:#15171b;--ink:#e7e6e1;--muted:#a3a5ab;--rule:#2b2e34;--card:#1c1f24;--accent:#8fb8e0;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.65 var(--serif)}
+main{max-width:44rem;margin:0 auto;padding-inline:1.25rem;padding-block:2.5rem 4rem}
+a{color:var(--accent);text-underline-offset:2px}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1{font-size:1.85rem;line-height:1.25;margin:0;text-wrap:balance;font-weight:600}
+h2{font:600 .78rem var(--sans);text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin:2.4rem 0 .8rem;padding-top:.8rem;border-top:1px solid var(--rule)}
+h3{font:600 1rem var(--sans);margin:1.2rem 0 .2rem}
+p{max-width:65ch}
+.meta,.small{color:var(--muted);font-size:.92rem}
+.venue{display:inline-block;font:600 .74rem var(--sans);letter-spacing:.04em;color:var(--accent);border:1px solid currentColor;border-radius:3px;padding:.05rem .45rem}
+.links{display:flex;flex-wrap:wrap;gap:.3rem 1rem;font:500 .88rem var(--sans)}
+.head{display:grid;gap:.6rem;margin-bottom:.4rem}
+.pub{display:grid;gap:.3rem;padding-block:1.1rem;border-bottom:1px solid var(--rule)}
+.pub .t{font-weight:600;line-height:1.35}
+.pub .t a{color:var(--ink);text-decoration:none}
+.pub .t a:hover{color:var(--accent)}
+pre{background:var(--card);border:1px solid var(--rule);padding:1rem;overflow-x:auto;font:.78rem/1.5 var(--mono)}
+nav{display:flex;gap:1rem;font:500 .88rem var(--sans);margin-bottom:2rem}
+nav a{text-decoration:none}
+details{margin-top:2.4rem;padding-top:.8rem;border-top:1px solid var(--rule)}
+summary{cursor:pointer;font:600 .78rem var(--sans);text-transform:uppercase;letter-spacing:.09em;color:var(--muted)}
+summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.lede{font-size:1.08rem;color:var(--muted)}
+table{border-collapse:collapse;width:100%;font:.9rem/1.45 var(--sans)}
+.tw{overflow-x:auto}
+td,th{text-align:left;vertical-align:top;padding:.45rem .6rem .45rem 0;border-bottom:1px solid var(--rule)}
+th{font-weight:600;color:var(--muted)}
+td:first-child{font-variant-numeric:tabular-nums;white-space:nowrap;font-weight:600}
+ul.rel{padding-left:1.1rem}
+</style>
+</head>
+<body>
+<main>
+<nav><a href="https://zhixudu.github.io/">&larr; Zhixu Du</a><a href="https://zhixudu.github.io/projects/token-cost/">Token cost (MoA) paper page</a></nav>
+<div class="head"><div><span class="venue">Under review</span></div>
+<h1>Projecting LLM Decoding Latency from Throughput Benchmarks</h1>
+<p class="lede">How can one project LLM decoding latency from published tokens-per-second benchmarks?</p></div>
+<h2>Answer</h2>
+<p>Fit a two-parameter cost model per model to published whole-request timings, then apply it to the forward calls and positions a policy actually used. Du et al. (2026) project time as the sum over the small and target models of a_m K_m + b_m (F_m - K_m) (Eq. 18), where K_m is the number of forward calls and F_m the total input positions processed, including prompt tokens, cache catch-up and rejected speculative tokens. A single-position call costs a_m, and processing n positions together costs a_m + b_m(n-1), so parallel verification is not priced as n sequential calls.</p><p>The anchors are the official Qwen2.5 BF16 benchmarks for vLLM 0.6.3 on A100 80GB GPUs, with four GPUs for the 72B target and one for the 0.5B model. a_m is the inverse of the shortest-input generation rate, 31.37 and 311.55 output tokens per second for 2,048-token outputs. b_m is fitted by least squares to published total times at input lengths 6144, 14336 and 30720 (Eq. 19). The fit gives 3.210 and 0.03683 ms for 0.5B and 31.878 and 0.28557 ms for 72B, and reproduces the published times with a maximum relative error of 2.13%.</p><p>Sensitivity is checked by scaling the per-position coefficients by 0, 0.5, 1 and 2, small-model times by 0.5, 1 and 2, and adding 0, 0.5 or 1 target-call equivalents per verification. Across all 36 combinations, map-guided drafting stayed faster than fixed-window and adaptive drafting by 8.3-24.7% and 7.3-18.4%. These ranges describe chosen assumptions, not statistical intervals.</p><p>The projection assumes a warm, single-request scenario with both models resident and running sequentially. It omits kernel differences, nonlinearities, switching and controller overhead, queueing, loading, network delivery and map acquisition, so the numbers are conditional model-execution estimates, not measured end-to-end latencies.</p>
+<h2>Key numbers</h2>
+<div class="tw"><table><thead><tr><th>Value</th><th>Meaning</th><th>Where in the paper</th></tr></thead><tbody><tr><td>2.13%</td><td>maximum relative error of the fit to published whole-request times</td><td>Appendix E.2</td></tr><tr><td>31.37</td><td>published 72B output tokens per second (one-token input)</td><td>Appendix E.2</td></tr><tr><td>311.55</td><td>published 0.5B output tokens per second (one-token input)</td><td>Appendix E.2</td></tr><tr><td>(31.878, 0.28557)</td><td>fitted per-call and per-position costs (ms) for 72B</td><td>Appendix E.2</td></tr><tr><td>36</td><td>timing scenarios in the sensitivity analysis</td><td>Appendix E.2</td></tr></tbody></table></div>
+<h2>Setup</h2>
+<p>Official Qwen2.5 BF16 vLLM 0.6.3 throughput benchmarks on A100 80GB GPUs (four GPUs for Qwen2.5-72B-Instruct, one for Qwen2.5-0.5B-Instruct) supply the anchors; recorded call counts and processed positions come from ten allocation policies run on all 500 MATH-500 problems.</p>
+<p class="small">Projections describe a warm single-request scenario under the stated timing assumptions; accuracies come from a separate PyTorch backend.</p>
+<h2>Source</h2>
+<p><a href="https://zhixudu.github.io/projects/token-cost/">What Does a Token Cost? A Mixture-of-Agents Measurement of Sufficient Per-Token Compute</a>. Zhixu Du, Weijia Han, Hai (Helen) Li, Yiran Chen. Under review, 2026. Evidence: Appendix E.2, Eqs. 18-19.</p>
+<div class="links"><a href="https://arxiv.org/abs/2610.02491">arXiv</a> <a href="https://arxiv.org/pdf/2610.02491">PDF</a> <a href="https://zhixudu.github.io/projects/token-cost/citation.bib">BibTeX</a></div>
+<h2>Related questions</h2><ul class="rel"><li><a href="https://zhixudu.github.io/projects/token-cost/per-token-inference-flops-transformer-kv-cache/">Counting Per-Token Inference FLOPs for Transformers with KV Cache</a></li><li><a href="https://zhixudu.github.io/projects/token-cost/oracle-draft-length-speculative-decoding-headroom/">Oracle Draft Length and Headroom in Speculative Decoding</a></li><li><a href="https://zhixudu.github.io/projects/token-cost/headroom-confidence-based-token-routing/">Headroom in Confidence-Based Small/Large Token Routing</a></li></ul>
+<details><summary>Citation (BibTeX)</summary>
+<pre>@misc{du2026token,
+  title         = {What Does a Token Cost? A Mixture-of-Agents Measurement of Sufficient Per-Token Compute},
+  author        = {Du, Zhixu and Han, Weijia and Li, Hai and Chen, Yiran},
+  year          = {2026},
+  eprint        = {2610.02491},
+  archivePrefix = {arXiv},
+  url           = {https://arxiv.org/abs/2610.02491}
+}
+</pre>
+</details>
+
+</main>
+</body>
+</html>

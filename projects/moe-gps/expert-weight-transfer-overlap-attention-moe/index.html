@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cost of Moving Duplicated Expert Weights in MoE Inference | MoE-GPS</title>
+<meta name="description" content="Not necessarily: one FP16 Mixtral 8x7B expert moves in about 0.1 ms over NVLink 3.0, less than attention time, so the copy can overlap attention.">
+<link rel="canonical" href="https://zhixudu.github.io/projects/moe-gps/expert-weight-transfer-overlap-attention-moe/">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "Cost of Moving Duplicated Expert Weights in MoE Inference", "description": "Not necessarily: one FP16 Mixtral 8x7B expert moves in about 0.1 ms over NVLink 3.0, less than attention time, so the copy can overlap attention.", "about": "Hiding expert weight transfer behind attention", "url": "https://zhixudu.github.io/projects/moe-gps/expert-weight-transfer-overlap-attention-moe/", "dateModified": "2026-11-10", "author": [{"@type": "Person", "name": "Haiyue Ma"}, {"@type": "Person", "name": "Zhixu Du"}, {"@type": "Person", "name": "Yiran Chen"}], "isBasedOn": {"@type": "ScholarlyArticle", "name": "MoE-GPS: Guidlines for Prediction Strategy for Dynamic Expert Duplication in MoE Load Balancing", "url": "https://arxiv.org/abs/2506.07366"}}</script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=IBM+Plex+Sans:wght@500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+/* Layout: single reading column, publication list as ruled entries, venue as a small stamp. */
+:root{
+  --paper:#f7f6f2;--ink:#1b1d22;--muted:#5d6068;--rule:#dcdad3;--card:#ffffff;--accent:#1f4e79;
+  --serif:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#15171b;--ink:#e7e6e1;--muted:#a3a5ab;--rule:#2b2e34;--card:#1c1f24;--accent:#8fb8e0;color-scheme:dark}}
+:root[data-theme="dark"]{--paper:#15171b;--ink:#e7e6e1;--muted:#a3a5ab;--rule:#2b2e34;--card:#1c1f24;--accent:#8fb8e0;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.65 var(--serif)}
+main{max-width:44rem;margin:0 auto;padding-inline:1.25rem;padding-block:2.5rem 4rem}
+a{color:var(--accent);text-underline-offset:2px}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1{font-size:1.85rem;line-height:1.25;margin:0;text-wrap:balance;font-weight:600}
+h2{font:600 .78rem var(--sans);text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin:2.4rem 0 .8rem;padding-top:.8rem;border-top:1px solid var(--rule)}
+h3{font:600 1rem var(--sans);margin:1.2rem 0 .2rem}
+p{max-width:65ch}
+.meta,.small{color:var(--muted);font-size:.92rem}
+.venue{display:inline-block;font:600 .74rem var(--sans);letter-spacing:.04em;color:var(--accent);border:1px solid currentColor;border-radius:3px;padding:.05rem .45rem}
+.links{display:flex;flex-wrap:wrap;gap:.3rem 1rem;font:500 .88rem var(--sans)}
+.head{display:grid;gap:.6rem;margin-bottom:.4rem}
+.pub{display:grid;gap:.3rem;padding-block:1.1rem;border-bottom:1px solid var(--rule)}
+.pub .t{font-weight:600;line-height:1.35}
+.pub .t a{color:var(--ink);text-decoration:none}
+.pub .t a:hover{color:var(--accent)}
+pre{background:var(--card);border:1px solid var(--rule);padding:1rem;overflow-x:auto;font:.78rem/1.5 var(--mono)}
+nav{display:flex;gap:1rem;font:500 .88rem var(--sans);margin-bottom:2rem}
+nav a{text-decoration:none}
+details{margin-top:2.4rem;padding-top:.8rem;border-top:1px solid var(--rule)}
+summary{cursor:pointer;font:600 .78rem var(--sans);text-transform:uppercase;letter-spacing:.09em;color:var(--muted)}
+summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.lede{font-size:1.08rem;color:var(--muted)}
+table{border-collapse:collapse;width:100%;font:.9rem/1.45 var(--sans)}
+.tw{overflow-x:auto}
+td,th{text-align:left;vertical-align:top;padding:.45rem .6rem .45rem 0;border-bottom:1px solid var(--rule)}
+th{font-weight:600;color:var(--muted)}
+td:first-child{font-variant-numeric:tabular-nums;white-space:nowrap;font-weight:600}
+ul.rel{padding-left:1.1rem}
+</style>
+</head>
+<body>
+<main>
+<nav><a href="https://zhixudu.github.io/">&larr; Zhixu Du</a><a href="https://zhixudu.github.io/projects/moe-gps/">MoE-GPS paper page</a></nav>
+<div class="head"><div><span class="venue">NeurIPS 2025 Workshop (ML for Systems)</span></div>
+<h1>Cost of Moving Duplicated Expert Weights in MoE Inference</h1>
+<p class="lede">Is per-batch dynamic expert replication too expensive due to weight movement?</p></div>
+<h2>Answer</h2>
+<p>Not necessarily. Moving one duplicated expert&#x27;s weights is small enough to hide behind attention computation in common settings. MoE-GPS: Guidelines for Prediction Strategy for Dynamic Expert Duplication in MoE Load Balancing (Ma et al., 2025) estimates that, for Mixtral 8x7B, each FP16 expert holds about 4,096 x 14,336 x 2 x 2 bytes of weights, and that if one expert is sent and received per GPU per layer, the transfer takes about 0.1 ms over NVLink 3.0 at 2 TB/s. That is less than the attention layer runtime at batch size 1 and sequence length 512.</p><p>The copy can overlap with attention because expert weights are static across inputs, so they do not depend on the current batch&#x27;s activations. In the paper&#x27;s design, a pre-trained predictor runs before attention in each layer to decide which experts to duplicate, and attention is compute-bound at moderate batch sizes. Over a slower link, PCIe 4.0 at 32 GB/s, the duplication latency can still be hidden with modest increases in workload, for example batch size 16 and sequence length 2K, which the authors describe as the low end of practical inference workloads. Expert prefetching or pipelined movement between layers could reduce the cost further.</p><p>This estimate supports the paper&#x27;s assumption of prediction and placement every batch. Prior systems choose intervals from every single batch to every 10 minutes to trade movement overhead against balancing effectiveness, and the simulator can model less frequent placement by averaging overhead over multiple batches.</p><p>The question matters because dynamic duplication only pays off if its own communication does not offset the gains from balancing FFN load across GPUs.</p>
+<h2>Key numbers</h2>
+<div class="tw"><table><thead><tr><th>Value</th><th>Meaning</th><th>Where in the paper</th></tr></thead><tbody><tr><td>0.1 ms</td><td>approximate transfer time for one FP16 Mixtral 8x7B expert over NVLink 3.0</td><td>Section 5</td></tr><tr><td>2 TB/s</td><td>NVLink 3.0 bandwidth assumed</td><td>Section 5</td></tr><tr><td>32 GB/s</td><td>PCIe 4.0 bandwidth assumed</td><td>Section 5</td></tr><tr><td>batch size 16, sequence length 2K</td><td>workload at which PCIe 4.0 transfers can be hidden</td><td>Section 5</td></tr></tbody></table></div>
+<h2>Setup</h2>
+<p>Mixtral 8x7B (with Llama-MoE and Switch Transformer in the appendix) on MMLU, Alpaca Eval and SST2, batch size 1 and sequence length 512. Latency is simulated for a single Transformer layer of prefill (time to first token) with an extended LLMCompass simulator, on four A100 GPUs fully connected by NVLink 3.0 (2 TB/s) or PCIe 4.0 (32GB/s), using tensor parallelism for attention and expert parallelism for FFN layers. Predictor overhead is measured on A100 GPUs. Compared: no prediction, Distribution-Only Prediction, and Token-to-Expert Prediction at a range of accuracies.</p>
+<p class="small">A back-of-envelope estimate for Mixtral 8x7B assuming one expert sent and received per GPU per layer; not measured on hardware.</p>
+<h2>Source</h2>
+<p><a href="https://zhixudu.github.io/projects/moe-gps/">MoE-GPS: Guidlines for Prediction Strategy for Dynamic Expert Duplication in MoE Load Balancing</a>. Haiyue Ma, Zhixu Du, Yiran Chen. NeurIPS 2025 Workshop on ML for Systems, 2025. Evidence: Section 5.</p>
+<div class="links"><a href="https://arxiv.org/abs/2506.07366">arXiv</a> <a href="https://arxiv.org/pdf/2506.07366">PDF</a> <a href="https://openreview.net/forum?id=VCh5vBSxxb">OpenReview</a> <a href="https://zhixudu.github.io/projects/moe-gps/citation.bib">BibTeX</a></div>
+<h2>Related questions</h2><ul class="rel"><li><a href="https://zhixudu.github.io/projects/moe-gps/greedy-expert-duplication-placement-algorithm-moe/">Greedy Expert Duplication Algorithm for MoE GPU Load Balancing</a></li><li><a href="https://zhixudu.github.io/projects/moe-gps/llmcompass-moe-expert-parallelism-simulator/">Simulating MoE Expert Parallelism Latency With LLMCompass</a></li><li><a href="https://zhixudu.github.io/projects/moe-gps/pcie-vs-nvlink-moe-expert-load-balancing/">PCIe vs NVLink: Picking an MoE Load Balancing Strategy</a></li></ul>
+<details><summary>Citation (BibTeX)</summary>
+<pre>@inproceedings{ma2025moe,
+  title     = {MoE-GPS: Guidlines for Prediction Strategy for Dynamic Expert Duplication in MoE Load Balancing},
+  author    = {Ma, Haiyue and Du, Zhixu and Chen, Yiran},
+  booktitle = {NeurIPS 2025 Workshop on ML for Systems},
+  year      = {2025},
+  url       = {https://arxiv.org/abs/2506.07366}
+}
+</pre>
+</details>
+
+</main>
+</body>
+</html>

@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MoE Inference Throughput Under a Fixed GPU Memory Budget | SiDA-MoE</title>
+<meta name="description" content="Across GPU budgets of about 10 to 80 GB, data-aware expert offloading with a FIFO cache gave higher throughput than layer-wise model parallelism.">
+<link rel="canonical" href="https://zhixudu.github.io/projects/sida-moe/moe-throughput-vs-gpu-memory-budget/">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "MoE Inference Throughput Under a Fixed GPU Memory Budget", "description": "Across GPU budgets of about 10 to 80 GB, data-aware expert offloading with a FIFO cache gave higher throughput than layer-wise model parallelism.", "about": "Expert offloading versus model parallelism under memory budgets", "url": "https://zhixudu.github.io/projects/sida-moe/moe-throughput-vs-gpu-memory-budget/", "dateModified": "2026-11-10", "author": [{"@type": "Person", "name": "Zhixu Du"}, {"@type": "Person", "name": "Shiyu Li"}, {"@type": "Person", "name": "Yuhao Wu"}, {"@type": "Person", "name": "Xiangyu Jiang"}, {"@type": "Person", "name": "Jingwei Sun"}, {"@type": "Person", "name": "Qilin Zheng"}, {"@type": "Person", "name": "Yongkai Wu"}, {"@type": "Person", "name": "Ang Li"}, {"@type": "Person", "name": "Hai (Helen) Li"}, {"@type": "Person", "name": "Yiran Chen"}], "isBasedOn": {"@type": "ScholarlyArticle", "name": "SiDA: Sparsity-Inspired Data-Aware Serving for Efficient and Scalable Large Mixture-of-Experts Models", "url": "https://arxiv.org/abs/2310.18859"}}</script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=IBM+Plex+Sans:wght@500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+/* Layout: single reading column, publication list as ruled entries, venue as a small stamp. */
+:root{
+  --paper:#f7f6f2;--ink:#1b1d22;--muted:#5d6068;--rule:#dcdad3;--card:#ffffff;--accent:#1f4e79;
+  --serif:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#15171b;--ink:#e7e6e1;--muted:#a3a5ab;--rule:#2b2e34;--card:#1c1f24;--accent:#8fb8e0;color-scheme:dark}}
+:root[data-theme="dark"]{--paper:#15171b;--ink:#e7e6e1;--muted:#a3a5ab;--rule:#2b2e34;--card:#1c1f24;--accent:#8fb8e0;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.65 var(--serif)}
+main{max-width:44rem;margin:0 auto;padding-inline:1.25rem;padding-block:2.5rem 4rem}
+a{color:var(--accent);text-underline-offset:2px}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1{font-size:1.85rem;line-height:1.25;margin:0;text-wrap:balance;font-weight:600}
+h2{font:600 .78rem var(--sans);text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin:2.4rem 0 .8rem;padding-top:.8rem;border-top:1px solid var(--rule)}
+h3{font:600 1rem var(--sans);margin:1.2rem 0 .2rem}
+p{max-width:65ch}
+.meta,.small{color:var(--muted);font-size:.92rem}
+.venue{display:inline-block;font:600 .74rem var(--sans);letter-spacing:.04em;color:var(--accent);border:1px solid currentColor;border-radius:3px;padding:.05rem .45rem}
+.links{display:flex;flex-wrap:wrap;gap:.3rem 1rem;font:500 .88rem var(--sans)}
+.head{display:grid;gap:.6rem;margin-bottom:.4rem}
+.pub{display:grid;gap:.3rem;padding-block:1.1rem;border-bottom:1px solid var(--rule)}
+.pub .t{font-weight:600;line-height:1.35}
+.pub .t a{color:var(--ink);text-decoration:none}
+.pub .t a:hover{color:var(--accent)}
+pre{background:var(--card);border:1px solid var(--rule);padding:1rem;overflow-x:auto;font:.78rem/1.5 var(--mono)}
+nav{display:flex;gap:1rem;font:500 .88rem var(--sans);margin-bottom:2rem}
+nav a{text-decoration:none}
+details{margin-top:2.4rem;padding-top:.8rem;border-top:1px solid var(--rule)}
+summary{cursor:pointer;font:600 .78rem var(--sans);text-transform:uppercase;letter-spacing:.09em;color:var(--muted)}
+summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.lede{font-size:1.08rem;color:var(--muted)}
+table{border-collapse:collapse;width:100%;font:.9rem/1.45 var(--sans)}
+.tw{overflow-x:auto}
+td,th{text-align:left;vertical-align:top;padding:.45rem .6rem .45rem 0;border-bottom:1px solid var(--rule)}
+th{font-weight:600;color:var(--muted)}
+td:first-child{font-variant-numeric:tabular-nums;white-space:nowrap;font-weight:600}
+ul.rel{padding-left:1.1rem}
+</style>
+</head>
+<body>
+<main>
+<nav><a href="https://zhixudu.github.io/">&larr; Zhixu Du</a><a href="https://zhixudu.github.io/projects/sida-moe/">SiDA-MoE paper page</a></nav>
+<div class="head"><div><span class="venue">MLSys 2024</span></div>
+<h1>MoE Inference Throughput Under a Fixed GPU Memory Budget</h1>
+<p class="lede">Throughput of MoE inference as a function of GPU memory budget</p></div>
+<h2>Answer</h2>
+<p>Under a fixed GPU memory budget, offloading individual experts chosen by the input gave higher throughput than keeping whole layers on the GPU in the experiments of SiDA-MoE (Du et al., MLSys 2024). The authors swept GPU memory budgets from roughly 10 to 80 GB on Switch-base-128 and Switch-base-256 and found SiDA-MoE&#x27;s throughput higher at every budget and on all three datasets (SST2, MRPC, MultiRC).</p><p>The two strategies differ in what they keep resident. The baselines use model parallelism in the sense of keeping on the GPU only the layers currently required for inference. SiDA-MoE predicts, before inference, which experts each token in a batch will use, loads those experts, and offloads and caches inactive experts in main memory first-in-first-out when the budget is exhausted. The paper notes that FIFO was chosen for fair comparison with baselines and that other eviction strategies could also be effective.</p><p>The result follows from sentence-level sparsity: on SST2, a sentence activates fewer than 40% of experts in Switch-base-128 and fewer than 20% in Switch-base-256, so expert-granular residency wastes less of the budget than layer-granular residency. The paper reports that the advantage is particularly pronounced in constrained memory scenarios.</p><p>These two models were chosen because large MoE models are the most resource-sensitive: Switch-base-128 is 27.614 GB and Switch-base-256 is 54.62 GB in total. Exact per-budget throughput values are shown in Figure 11 of the paper rather than tabulated.</p>
+<h2>Key numbers</h2>
+<div class="tw"><table><thead><tr><th>Value</th><th>Meaning</th><th>Where in the paper</th></tr></thead><tbody><tr><td>10 to 80 GB</td><td>Range of GPU memory budgets swept (approximate, from Figure 11 axis)</td><td>Figure 11</td></tr><tr><td>27.614</td><td>Switch-base-128 total size in GB</td><td>Table 2</td></tr><tr><td>54.62</td><td>Switch-base-256 total size in GB</td><td>Table 2</td></tr></tbody></table></div>
+<h2>Setup</h2>
+<p>Switch-base-128 and Switch-base-256 on SST2, MRPC and MultiRC on an A100 80GB GPU; SiDA-MoE with FIFO expert cache versus the Standard baseline using layer-wise model parallelism, across a sweep of GPU memory budgets.</p>
+<p class="small">The budget sweep compared expert-level FIFO caching with layer-level residency on two Switch Transformer models on a single GPU; other caching policies were not evaluated.</p>
+<h2>Source</h2>
+<p><a href="https://zhixudu.github.io/projects/sida-moe/">SiDA: Sparsity-Inspired Data-Aware Serving for Efficient and Scalable Large Mixture-of-Experts Models</a>. Zhixu Du, Shiyu Li, Yuhao Wu, Xiangyu Jiang, Jingwei Sun, Qilin Zheng, Yongkai Wu, Ang Li, Hai (Helen) Li, Yiran Chen. Proceedings of the Seventh Conference on Machine Learning and Systems (MLSys 2024), 2024. Evidence: Section 4.3; Figure 11.</p>
+<div class="links"><a href="https://arxiv.org/abs/2310.18859">arXiv</a> <a href="https://arxiv.org/pdf/2310.18859">PDF</a> <a href="https://openreview.net/forum?id=q26ydTFF5j">OpenReview</a> <a href="https://github.com/timlee0212/SiDA-MoE">Code</a> <a href="https://zhixudu.github.io/projects/sida-moe/citation.bib">BibTeX</a></div>
+<h2>Related questions</h2><ul class="rel"><li><a href="https://zhixudu.github.io/projects/sida-moe/run-moe-model-larger-than-gpu-memory/">Running MoE Models Larger Than GPU Memory via Expert Offloading</a></li><li><a href="https://zhixudu.github.io/projects/sida-moe/overlap-moe-expert-routing-and-transfer/">Overlapping MoE Expert Selection and CPU-GPU Transfer</a></li><li><a href="https://zhixudu.github.io/projects/sida-moe/efficient-moe-inference-systems-overview/">Systems for Efficient MoE Inference and Expert Offloading</a></li></ul>
+<details><summary>Citation (BibTeX)</summary>
+<pre>@inproceedings{du2024sida,
+  title     = {SiDA: Sparsity-Inspired Data-Aware Serving for Efficient and Scalable Large Mixture-of-Experts Models},
+  author    = {Du, Zhixu and Li, Shiyu and Wu, Yuhao and Jiang, Xiangyu and Sun, Jingwei and Zheng, Qilin and Wu, Yongkai and Li, Ang and Li, Hai and Chen, Yiran},
+  booktitle = {Proceedings of the Seventh Conference on Machine Learning and Systems (MLSys 2024)},
+  year      = {2024},
+  url       = {https://arxiv.org/abs/2310.18859}
+}
+</pre>
+</details>
+
+</main>
+</body>
+</html>

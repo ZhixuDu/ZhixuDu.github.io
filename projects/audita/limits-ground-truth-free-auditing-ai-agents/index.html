@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Limits of Auditing AI Agent Failures Without Ground Truth | AUDITA</title>
+<meta name="description" content="If agents can make honest errors, no record-based breach standard is both sound and complete; yet a gold-free verdict matched a gold-informed one.">
+<link rel="canonical" href="https://zhixudu.github.io/projects/audita/limits-ground-truth-free-auditing-ai-agents/">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "Limits of Auditing AI Agent Failures Without Ground Truth", "description": "If agents can make honest errors, no record-based breach standard is both sound and complete; yet a gold-free verdict matched a gold-informed one.", "about": "Limits of ground-truth-free auditing", "url": "https://zhixudu.github.io/projects/audita/limits-ground-truth-free-auditing-ai-agents/", "dateModified": "2026-11-10", "author": [{"@type": "Person", "name": "Zhixu Du"}, {"@type": "Person", "name": "Yiran Chen"}], "isBasedOn": {"@type": "ScholarlyArticle", "name": "AUDITA: certified auditing and causal attribution of adverse outcomes in autonomous multi-agent systems", "url": "https://arxiv.org/abs/2608.22160"}}</script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=IBM+Plex+Sans:wght@500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+/* Layout: single reading column, publication list as ruled entries, venue as a small stamp. */
+:root{
+  --paper:#f7f6f2;--ink:#1b1d22;--muted:#5d6068;--rule:#dcdad3;--card:#ffffff;--accent:#1f4e79;
+  --serif:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#15171b;--ink:#e7e6e1;--muted:#a3a5ab;--rule:#2b2e34;--card:#1c1f24;--accent:#8fb8e0;color-scheme:dark}}
+:root[data-theme="dark"]{--paper:#15171b;--ink:#e7e6e1;--muted:#a3a5ab;--rule:#2b2e34;--card:#1c1f24;--accent:#8fb8e0;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.65 var(--serif)}
+main{max-width:44rem;margin:0 auto;padding-inline:1.25rem;padding-block:2.5rem 4rem}
+a{color:var(--accent);text-underline-offset:2px}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1{font-size:1.85rem;line-height:1.25;margin:0;text-wrap:balance;font-weight:600}
+h2{font:600 .78rem var(--sans);text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin:2.4rem 0 .8rem;padding-top:.8rem;border-top:1px solid var(--rule)}
+h3{font:600 1rem var(--sans);margin:1.2rem 0 .2rem}
+p{max-width:65ch}
+.meta,.small{color:var(--muted);font-size:.92rem}
+.venue{display:inline-block;font:600 .74rem var(--sans);letter-spacing:.04em;color:var(--accent);border:1px solid currentColor;border-radius:3px;padding:.05rem .45rem}
+.links{display:flex;flex-wrap:wrap;gap:.3rem 1rem;font:500 .88rem var(--sans)}
+.head{display:grid;gap:.6rem;margin-bottom:.4rem}
+.pub{display:grid;gap:.3rem;padding-block:1.1rem;border-bottom:1px solid var(--rule)}
+.pub .t{font-weight:600;line-height:1.35}
+.pub .t a{color:var(--ink);text-decoration:none}
+.pub .t a:hover{color:var(--accent)}
+pre{background:var(--card);border:1px solid var(--rule);padding:1rem;overflow-x:auto;font:.78rem/1.5 var(--mono)}
+nav{display:flex;gap:1rem;font:500 .88rem var(--sans);margin-bottom:2rem}
+nav a{text-decoration:none}
+details{margin-top:2.4rem;padding-top:.8rem;border-top:1px solid var(--rule)}
+summary{cursor:pointer;font:600 .78rem var(--sans);text-transform:uppercase;letter-spacing:.09em;color:var(--muted)}
+summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.lede{font-size:1.08rem;color:var(--muted)}
+table{border-collapse:collapse;width:100%;font:.9rem/1.45 var(--sans)}
+.tw{overflow-x:auto}
+td,th{text-align:left;vertical-align:top;padding:.45rem .6rem .45rem 0;border-bottom:1px solid var(--rule)}
+th{font-weight:600;color:var(--muted)}
+td:first-child{font-variant-numeric:tabular-nums;white-space:nowrap;font-weight:600}
+ul.rel{padding-left:1.1rem}
+</style>
+</head>
+<body>
+<main>
+<nav><a href="https://zhixudu.github.io/">&larr; Zhixu Du</a><a href="https://zhixudu.github.io/projects/audita/">AUDITA paper page</a></nav>
+<div class="head"><div><span class="venue">arXiv preprint 2026</span></div>
+<h1>Limits of Auditing AI Agent Failures Without Ground Truth</h1>
+<p class="lede">Is it possible to audit AI agent failures soundly and completely without ground-truth labels?</p></div>
+<h2>Answer</h2>
+<p>Not in general. AUDITA (Du and Chen, 2026) proves a completeness barrier (Theorem 4). Wherever duty-compliant conduct is fallible, meaning honest errors exist, no content-determined breach standard is both sound and complete, and any standard that closes the gap must decide output correctness for the audited task itself. Innocence can be certified from the record alone; completeness about outcome guilt cannot.</p><p>The terms are precise. A content-determined standard is computed only from an agent&#x27;s own certified messages and the certified inputs they act on, with no ground-truth label. It is sound if it passes all duty-compliant conduct, and complete if it fires on every conduct whose output was wrong relative to ground truth and caused the adverse outcome. An honest error, where a compliant agent reasons consistently and still lands on a wrong answer, must pass under soundness and fire under completeness, which is a contradiction. The second part of the theorem shows that a sound and complete standard would answer &quot;is this the correct answer?&quot; from a single record, so breach-completeness is at least as hard as answer verification. The barrier binds any auditor confined to the record, human or algorithmic.</p><p>The empirical results follow the theorem. On live GSM8K pipelines, the deployable verdict, which never sees the answer key, reached responsibility error 0.159, against 0.170 for the gold-informed verdict and 0.589 for the LLM judge. The two breach tests disagree essentially only on honest errors, and under negligence semantics the ground truth sides with the gold-free test. The paper argues that the field&#x27;s culprit-identification metric conflates outcome-culpability with breach-culpability, and that the barrier predicts parity, not superiority, with gold-informed judges on culprit identification, which matches the Who&amp;When agent accuracy of 0.408 inside a judge band of 0.41-0.51.</p>
+<h2>Key numbers</h2>
+<div class="tw"><table><thead><tr><th>Value</th><th>Meaning</th><th>Where in the paper</th></tr></thead><tbody><tr><td>0.159 ± 0.030</td><td>responsibility error of the gold-free deployable verdict</td><td>Table 1</td></tr><tr><td>0.170 ± 0.035</td><td>responsibility error of the gold-informed verdict</td><td>Table 1</td></tr><tr><td>0.589 ± 0.017</td><td>responsibility error of the LLM judge</td><td>Table 1</td></tr><tr><td>0.408</td><td>Who&amp;When agent accuracy of the static-log variant, within the judge band 0.41–0.51</td><td>Table 3</td></tr></tbody></table></div>
+<h2>Setup</h2>
+<p>Live corpus: a GSM8K multi-agent pipeline with a planner, three parallel solvers, an aggregator that carries a declared normative duty, and a verifier; three independently generated corpora of 480 cases each (one development, two holdouts), with fault injection calibrated to an empirical multi-agent failure taxonomy and every label replay-verified. Models are open-weight (Qwen2.5-72B-Instruct primary, Qwen2.5-7B-Instruct and Llama-3.1-8B-Instruct for additional study), served with vLLM on NVIDIA A100-80GB GPUs with greedy decoding and three generation seeds. Baselines: the Who&amp;When LLM judge, CAR / CausalFlow single-site counterfactual scoring, and Shapley-value attribution. Metric: responsibility error, the l1 distance between reported and true graded responsibility profiles.</p>
+<p class="small">The barrier is a theorem for content-determined breach standards in domains with honest fallibility; the empirical parity is shown on GSM8K pipelines and Who&amp;When.</p>
+<h2>Source</h2>
+<p><a href="https://zhixudu.github.io/projects/audita/">AUDITA: certified auditing and causal attribution of adverse outcomes in autonomous multi-agent systems</a>. Zhixu Du, Yiran Chen. arXiv preprint 2026, 2026. Evidence: Theorem 4; Supplementary Note S3 (Theorem S3, Remark S8); Results: Ablations.</p>
+<div class="links"><a href="https://arxiv.org/abs/2608.22160">arXiv</a> <a href="https://arxiv.org/pdf/2608.22160">PDF</a> <a href="https://zhixudu.github.io/projects/audita/citation.bib">BibTeX</a></div>
+<h2>Related questions</h2><ul class="rel"><li><a href="https://zhixudu.github.io/projects/audita/graded-blame-attribution-multi-agent-llm-failures/">Graded Blame Attribution for Multi-Agent LLM Pipeline Failures</a></li><li><a href="https://zhixudu.github.io/projects/audita/duty-standard-changes-ai-agent-culpability/">How the Declared Duty Standard Changes AI Culpability Verdicts</a></li><li><a href="https://zhixudu.github.io/projects/audita/who-and-when-benchmark-agent-step-accuracy/">Agent and Step Accuracy on the Who&amp;When Attribution Benchmark</a></li></ul>
+<details><summary>Citation (BibTeX)</summary>
+<pre>@misc{du2026audita,
+  title         = {AUDITA: certified auditing and causal attribution of adverse outcomes in autonomous multi-agent systems},
+  author        = {Du, Zhixu and Chen, Yiran},
+  year          = {2026},
+  eprint        = {2608.22160},
+  archivePrefix = {arXiv},
+  url           = {https://arxiv.org/abs/2608.22160}
+}
+</pre>
+</details>
+
+</main>
+</body>
+</html>

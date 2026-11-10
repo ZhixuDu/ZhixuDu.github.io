@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Modeling Expert Routing Misprediction Cost in Multi-GPU MoE | MoE-GPS</title>
+<meta name="description" content="Mispredictions inflate the bottleneck GPU&#x27;s FFN load to about (1+ε) times average in the typical case and up to N(1+ε) at worst, and always add traffic.">
+<link rel="canonical" href="https://zhixudu.github.io/projects/moe-gps/expert-routing-misprediction-error-latency-model/">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "Modeling Expert Routing Misprediction Cost in Multi-GPU MoE", "description": "Mispredictions inflate the bottleneck GPU's FFN load to about (1+ε) times average in the typical case and up to N(1+ε) at worst, and always add traffic.", "about": "Modeling prediction error impact on runtime", "url": "https://zhixudu.github.io/projects/moe-gps/expert-routing-misprediction-error-latency-model/", "dateModified": "2026-11-10", "author": [{"@type": "Person", "name": "Haiyue Ma"}, {"@type": "Person", "name": "Zhixu Du"}, {"@type": "Person", "name": "Yiran Chen"}], "isBasedOn": {"@type": "ScholarlyArticle", "name": "MoE-GPS: Guidlines for Prediction Strategy for Dynamic Expert Duplication in MoE Load Balancing", "url": "https://arxiv.org/abs/2506.07366"}}</script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=IBM+Plex+Sans:wght@500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+/* Layout: single reading column, publication list as ruled entries, venue as a small stamp. */
+:root{
+  --paper:#f7f6f2;--ink:#1b1d22;--muted:#5d6068;--rule:#dcdad3;--card:#ffffff;--accent:#1f4e79;
+  --serif:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#15171b;--ink:#e7e6e1;--muted:#a3a5ab;--rule:#2b2e34;--card:#1c1f24;--accent:#8fb8e0;color-scheme:dark}}
+:root[data-theme="dark"]{--paper:#15171b;--ink:#e7e6e1;--muted:#a3a5ab;--rule:#2b2e34;--card:#1c1f24;--accent:#8fb8e0;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.65 var(--serif)}
+main{max-width:44rem;margin:0 auto;padding-inline:1.25rem;padding-block:2.5rem 4rem}
+a{color:var(--accent);text-underline-offset:2px}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1{font-size:1.85rem;line-height:1.25;margin:0;text-wrap:balance;font-weight:600}
+h2{font:600 .78rem var(--sans);text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin:2.4rem 0 .8rem;padding-top:.8rem;border-top:1px solid var(--rule)}
+h3{font:600 1rem var(--sans);margin:1.2rem 0 .2rem}
+p{max-width:65ch}
+.meta,.small{color:var(--muted);font-size:.92rem}
+.venue{display:inline-block;font:600 .74rem var(--sans);letter-spacing:.04em;color:var(--accent);border:1px solid currentColor;border-radius:3px;padding:.05rem .45rem}
+.links{display:flex;flex-wrap:wrap;gap:.3rem 1rem;font:500 .88rem var(--sans)}
+.head{display:grid;gap:.6rem;margin-bottom:.4rem}
+.pub{display:grid;gap:.3rem;padding-block:1.1rem;border-bottom:1px solid var(--rule)}
+.pub .t{font-weight:600;line-height:1.35}
+.pub .t a{color:var(--ink);text-decoration:none}
+.pub .t a:hover{color:var(--accent)}
+pre{background:var(--card);border:1px solid var(--rule);padding:1rem;overflow-x:auto;font:.78rem/1.5 var(--mono)}
+nav{display:flex;gap:1rem;font:500 .88rem var(--sans);margin-bottom:2rem}
+nav a{text-decoration:none}
+details{margin-top:2.4rem;padding-top:.8rem;border-top:1px solid var(--rule)}
+summary{cursor:pointer;font:600 .78rem var(--sans);text-transform:uppercase;letter-spacing:.09em;color:var(--muted)}
+summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.lede{font-size:1.08rem;color:var(--muted)}
+table{border-collapse:collapse;width:100%;font:.9rem/1.45 var(--sans)}
+.tw{overflow-x:auto}
+td,th{text-align:left;vertical-align:top;padding:.45rem .6rem .45rem 0;border-bottom:1px solid var(--rule)}
+th{font-weight:600;color:var(--muted)}
+td:first-child{font-variant-numeric:tabular-nums;white-space:nowrap;font-weight:600}
+ul.rel{padding-left:1.1rem}
+</style>
+</head>
+<body>
+<main>
+<nav><a href="https://zhixudu.github.io/">&larr; Zhixu Du</a><a href="https://zhixudu.github.io/projects/moe-gps/">MoE-GPS paper page</a></nav>
+<div class="head"><div><span class="venue">NeurIPS 2025 Workshop (ML for Systems)</span></div>
+<h1>Modeling Expert Routing Misprediction Cost in Multi-GPU MoE</h1>
+<p class="lede">How do expert routing misprediction errors translate into load imbalance latency on multi-GPU systems?</p></div>
+<h2>Answer</h2>
+<p>Prediction errors translate into residual load imbalance on the GPU that ends up with the most tokens. With error rate ε, the typical case assumes errors spread evenly across GPUs, so the most-loaded GPU processes up to (1+ε) times the average token count. In the pessimistic case all errors land on one GPU, which then handles up to N(1+ε) times the average for N GPUs. In the optimistic case the errors do not hurt balance at all. MoE-GPS: Guidelines for Prediction Strategy for Dynamic Expert Duplication in MoE Load Balancing (Ma et al., 2025) uses this three-case model, with the typical case as the default in its simulations.</p><p>The error rate ε is defined per strategy. For Token-to-Expert Prediction, which predicts each token&#x27;s expert, ε is 1 minus accuracy. For Distribution-Only Prediction, which predicts only each expert&#x27;s share of tokens, ε is the averaged L1 distance over the number of experts. Using ε = 0.1 as an example, the optimistic case corresponds to predicting 85% of tokens for an expert that actually receives 75%, where duplication still yields perfect balance. The pessimistic case is unlikely but bounds performance degradation.</p><p>Communication is treated differently from compute. Under expert parallelism with Token-to-Expert Prediction, tokens are sent directly to the GPU of their predicted expert, and any misrouted token must trigger an extra inter-GPU transfer. Communication cost therefore always increases with prediction error, and no optimistic case exists for it. The typical-case assumption is applied to communication as well.</p><p>In the simulations, this error rate scales the runtime of the GPU that processes the most tokens. For example, the measured distribution estimation error rates for Mixtral 8x7B are 1.80% on MMLU, 0.98% on Alpaca Eval and 16.00% on SST2, and lower error led to better simulated performance.</p>
+<h2>Key numbers</h2>
+<div class="tw"><table><thead><tr><th>Value</th><th>Meaning</th><th>Where in the paper</th></tr></thead><tbody><tr><td>0.1</td><td>example error rate ε used to illustrate the three cases</td><td>Section 3.3</td></tr><tr><td>85%</td><td>optimistic-case example: predicted share for an expert that really gets 75%</td><td>Section 3.3</td></tr><tr><td>16.00</td><td>distribution estimation error rate (%) on SST2, used to scale runtime</td><td>Table 1</td></tr></tbody></table></div>
+<h2>Setup</h2>
+<p>Mixtral 8x7B (with Llama-MoE and Switch Transformer in the appendix) on MMLU, Alpaca Eval and SST2, batch size 1 and sequence length 512. Latency is simulated for a single Transformer layer of prefill (time to first token) with an extended LLMCompass simulator, on four A100 GPUs fully connected by NVLink 3.0 (2 TB/s) or PCIe 4.0 (32GB/s), using tensor parallelism for attention and expert parallelism for FFN layers. Predictor overhead is measured on A100 GPUs. Compared: no prediction, Distribution-Only Prediction, and Token-to-Expert Prediction at a range of accuracies.</p>
+<p class="small">An analytical error model applied to FFN compute and expert-parallel communication in simulation of Mixtral 8x7B prefill; the typical case is the default.</p>
+<h2>Source</h2>
+<p><a href="https://zhixudu.github.io/projects/moe-gps/">MoE-GPS: Guidlines for Prediction Strategy for Dynamic Expert Duplication in MoE Load Balancing</a>. Haiyue Ma, Zhixu Du, Yiran Chen. NeurIPS 2025 Workshop on ML for Systems, 2025. Evidence: Section 3.3, Figure 5.</p>
+<div class="links"><a href="https://arxiv.org/abs/2506.07366">arXiv</a> <a href="https://arxiv.org/pdf/2506.07366">PDF</a> <a href="https://openreview.net/forum?id=VCh5vBSxxb">OpenReview</a> <a href="https://zhixudu.github.io/projects/moe-gps/citation.bib">BibTeX</a></div>
+<h2>Related questions</h2><ul class="rel"><li><a href="https://zhixudu.github.io/projects/moe-gps/moe-expert-load-imbalance-skewness-metric/">Measuring MoE Expert Load Imbalance With a Skewness Metric</a></li><li><a href="https://zhixudu.github.io/projects/moe-gps/distribution-only-expert-load-prediction-moe/">Balancing MoE Experts With Predicted Expert Frequencies Only</a></li><li><a href="https://zhixudu.github.io/projects/moe-gps/expert-routing-predictor-accuracy-vs-overhead/">Expert Routing Predictor Accuracy vs Overhead in MoE Inference</a></li></ul>
+<details><summary>Citation (BibTeX)</summary>
+<pre>@inproceedings{ma2025moe,
+  title     = {MoE-GPS: Guidlines for Prediction Strategy for Dynamic Expert Duplication in MoE Load Balancing},
+  author    = {Ma, Haiyue and Du, Zhixu and Chen, Yiran},
+  booktitle = {NeurIPS 2025 Workshop on ML for Systems},
+  year      = {2025},
+  url       = {https://arxiv.org/abs/2506.07366}
+}
+</pre>
+</details>
+
+</main>
+</body>
+</html>

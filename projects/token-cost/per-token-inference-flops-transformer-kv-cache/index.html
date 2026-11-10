@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Counting Per-Token Inference FLOPs for Transformers with KV Cache | Token cost (MoA)</title>
+<meta name="description" content="Count matmul FLOPs from the config: A + B*p + H per token, where p is the cached prefix length; MoE layers count only the active experts.">
+<link rel="canonical" href="https://zhixudu.github.io/projects/token-cost/per-token-inference-flops-transformer-kv-cache/">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "Counting Per-Token Inference FLOPs for Transformers with KV Cache", "description": "Count matmul FLOPs from the config: A + B*p + H per token, where p is the cached prefix length; MoE layers count only the active experts.", "about": "Architecture-derived FLOP accounting for decoding", "url": "https://zhixudu.github.io/projects/token-cost/per-token-inference-flops-transformer-kv-cache/", "dateModified": "2026-11-10", "author": [{"@type": "Person", "name": "Zhixu Du"}, {"@type": "Person", "name": "Weijia Han"}, {"@type": "Person", "name": "Hai (Helen) Li"}, {"@type": "Person", "name": "Yiran Chen"}], "isBasedOn": {"@type": "ScholarlyArticle", "name": "What Does a Token Cost? A Mixture-of-Agents Measurement of Sufficient Per-Token Compute", "url": "https://arxiv.org/abs/2610.02491"}}</script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=IBM+Plex+Sans:wght@500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+/* Layout: single reading column, publication list as ruled entries, venue as a small stamp. */
+:root{
+  --paper:#f7f6f2;--ink:#1b1d22;--muted:#5d6068;--rule:#dcdad3;--card:#ffffff;--accent:#1f4e79;
+  --serif:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#15171b;--ink:#e7e6e1;--muted:#a3a5ab;--rule:#2b2e34;--card:#1c1f24;--accent:#8fb8e0;color-scheme:dark}}
+:root[data-theme="dark"]{--paper:#15171b;--ink:#e7e6e1;--muted:#a3a5ab;--rule:#2b2e34;--card:#1c1f24;--accent:#8fb8e0;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.65 var(--serif)}
+main{max-width:44rem;margin:0 auto;padding-inline:1.25rem;padding-block:2.5rem 4rem}
+a{color:var(--accent);text-underline-offset:2px}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1{font-size:1.85rem;line-height:1.25;margin:0;text-wrap:balance;font-weight:600}
+h2{font:600 .78rem var(--sans);text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin:2.4rem 0 .8rem;padding-top:.8rem;border-top:1px solid var(--rule)}
+h3{font:600 1rem var(--sans);margin:1.2rem 0 .2rem}
+p{max-width:65ch}
+.meta,.small{color:var(--muted);font-size:.92rem}
+.venue{display:inline-block;font:600 .74rem var(--sans);letter-spacing:.04em;color:var(--accent);border:1px solid currentColor;border-radius:3px;padding:.05rem .45rem}
+.links{display:flex;flex-wrap:wrap;gap:.3rem 1rem;font:500 .88rem var(--sans)}
+.head{display:grid;gap:.6rem;margin-bottom:.4rem}
+.pub{display:grid;gap:.3rem;padding-block:1.1rem;border-bottom:1px solid var(--rule)}
+.pub .t{font-weight:600;line-height:1.35}
+.pub .t a{color:var(--ink);text-decoration:none}
+.pub .t a:hover{color:var(--accent)}
+pre{background:var(--card);border:1px solid var(--rule);padding:1rem;overflow-x:auto;font:.78rem/1.5 var(--mono)}
+nav{display:flex;gap:1rem;font:500 .88rem var(--sans);margin-bottom:2rem}
+nav a{text-decoration:none}
+details{margin-top:2.4rem;padding-top:.8rem;border-top:1px solid var(--rule)}
+summary{cursor:pointer;font:600 .78rem var(--sans);text-transform:uppercase;letter-spacing:.09em;color:var(--muted)}
+summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.lede{font-size:1.08rem;color:var(--muted)}
+table{border-collapse:collapse;width:100%;font:.9rem/1.45 var(--sans)}
+.tw{overflow-x:auto}
+td,th{text-align:left;vertical-align:top;padding:.45rem .6rem .45rem 0;border-bottom:1px solid var(--rule)}
+th{font-weight:600;color:var(--muted)}
+td:first-child{font-variant-numeric:tabular-nums;white-space:nowrap;font-weight:600}
+ul.rel{padding-left:1.1rem}
+</style>
+</head>
+<body>
+<main>
+<nav><a href="https://zhixudu.github.io/">&larr; Zhixu Du</a><a href="https://zhixudu.github.io/projects/token-cost/">Token cost (MoA) paper page</a></nav>
+<div class="head"><div><span class="venue">Under review</span></div>
+<h1>Counting Per-Token Inference FLOPs for Transformers with KV Cache</h1>
+<p class="lede">How do you count per-token inference FLOPs for a transformer with a KV cache?</p></div>
+<h2>Answer</h2>
+<p>Count matrix-multiplication FLOPs from the released model configuration, with one multiply-add counted as two operations, and add an attention term that grows with the cached prefix. Du et al. (2026) write the cost of one next-token prediction with p cached prefix tokens as c(s) = A + B p + H (Eq. 13). With hidden width h, query width q, key/value width r, L layers and vocabulary V, A sums 4h(q + r) for the query, key, value and output projections, 6h times the active feed-forward width for the gate, up and down matrices, and 2h times the number of routed experts for MoE routers. B = 4Lq covers the two attention matrix products per query-key pair, and H = 2hV is the vocabulary projection.</p><p>For sparse layers only the selected experts count; Qwen3-30B-A3B uses eight active experts out of 128 per layer. Embedding lookup, normalisation, activations, bias additions, rotary embeddings, softmax and expert dispatch are excluded, as are kernel padding, communication and memory movement. A whole request with m input and n generated tokens (Eq. 14) costs m A plus B m(m+1)/2 attention pairs for prefill, one vocabulary projection, and n-1 cached decoding steps at prefix lengths m+1 through m+n-1.</p><p>The paper&#x27;s ledger shows why speculative decoding can lower latency while raising total FLOPs. On MATH-500, 72B alone used 101.92 TFLOPs at a projected 19.03 seconds, while fixed 16-token drafting used 154.30 TFLOPs at 4.98 seconds, adaptive drafting 140.52 at 4.69, and map-guided drafting 112.07 at 3.99. The ledger includes prompt prefill, cache catch-up, rejected drafts and target verification. Verifying n positions in one target call costs far less time than n sequential calls, so extra arithmetic can still shorten wall-clock time; logical FLOPs do not capture memory traffic.</p>
+<h2>Key numbers</h2>
+<div class="tw"><table><thead><tr><th>Value</th><th>Meaning</th><th>Where in the paper</th></tr></thead><tbody><tr><td>101.92 ± 1.87</td><td>TFLOPs for 72B alone on MATH-500</td><td>Table A10</td></tr><tr><td>154.30 ± 3.27</td><td>TFLOPs for fixed 16-token drafting</td><td>Table A10</td></tr><tr><td>140.52 ± 2.75</td><td>TFLOPs for adaptive drafting</td><td>Table A10</td></tr><tr><td>112.07 ± 2.31</td><td>TFLOPs for map-guided drafting</td><td>Table A10</td></tr><tr><td>19.03 ± 0.38</td><td>projected seconds for 72B alone</td><td>Table A10</td></tr></tbody></table></div>
+<h2>Setup</h2>
+<p>FLOP accounting from released model configurations for dense Qwen2.5, OLMo-2, R1-Distill-Qwen and Falcon3 models and the Qwen3-30B-A3B MoE generator (Appendix B.1). The ledger is applied to actual forwarded positions and requested logits in the MATH-500 allocation experiments (all 500 problems, Qwen2.5-0.5B-Instruct draft and Qwen2.5-72B-Instruct target, greedy decoding, 1,024-token cap).</p>
+<p class="small">Counts are logical matrix-multiplication FLOPs; they exclude memory movement, communication and kernel effects.</p>
+<h2>Source</h2>
+<p><a href="https://zhixudu.github.io/projects/token-cost/">What Does a Token Cost? A Mixture-of-Agents Measurement of Sufficient Per-Token Compute</a>. Zhixu Du, Weijia Han, Hai (Helen) Li, Yiran Chen. Under review, 2026. Evidence: Appendix B.1, Eqs. 12-14, Table A10.</p>
+<div class="links"><a href="https://arxiv.org/abs/2610.02491">arXiv</a> <a href="https://arxiv.org/pdf/2610.02491">PDF</a> <a href="https://zhixudu.github.io/projects/token-cost/citation.bib">BibTeX</a></div>
+<h2>Related questions</h2><ul class="rel"><li><a href="https://zhixudu.github.io/projects/token-cost/project-llm-latency-from-throughput-benchmarks/">Projecting LLM Decoding Latency from Throughput Benchmarks</a></li><li><a href="https://zhixudu.github.io/projects/token-cost/oracle-draft-length-speculative-decoding-headroom/">Oracle Draft Length and Headroom in Speculative Decoding</a></li><li><a href="https://zhixudu.github.io/projects/token-cost/per-token-compute-requirements-llm/">Measuring How Much Compute Each LLM Token Needs</a></li></ul>
+<details><summary>Citation (BibTeX)</summary>
+<pre>@misc{du2026token,
+  title         = {What Does a Token Cost? A Mixture-of-Agents Measurement of Sufficient Per-Token Compute},
+  author        = {Du, Zhixu and Han, Weijia and Li, Hai and Chen, Yiran},
+  year          = {2026},
+  eprint        = {2610.02491},
+  archivePrefix = {arXiv},
+  url           = {https://arxiv.org/abs/2610.02491}
+}
+</pre>
+</details>
+
+</main>
+</body>
+</html>

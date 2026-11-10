@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Measuring MoE Expert Load Imbalance With a Skewness Metric | MoE-GPS</title>
+<meta name="description" content="Use skewness: tokens on the most popular expert divided by the average tokens per expert. FFN time and all-to-all communication both scale with it.">
+<link rel="canonical" href="https://zhixudu.github.io/projects/moe-gps/moe-expert-load-imbalance-skewness-metric/">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "Measuring MoE Expert Load Imbalance With a Skewness Metric", "description": "Use skewness: tokens on the most popular expert divided by the average tokens per expert. FFN time and all-to-all communication both scale with it.", "about": "Routing skewness metric and its effect on prediction", "url": "https://zhixudu.github.io/projects/moe-gps/moe-expert-load-imbalance-skewness-metric/", "dateModified": "2026-11-10", "author": [{"@type": "Person", "name": "Haiyue Ma"}, {"@type": "Person", "name": "Zhixu Du"}, {"@type": "Person", "name": "Yiran Chen"}], "isBasedOn": {"@type": "ScholarlyArticle", "name": "MoE-GPS: Guidlines for Prediction Strategy for Dynamic Expert Duplication in MoE Load Balancing", "url": "https://arxiv.org/abs/2506.07366"}}</script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=IBM+Plex+Sans:wght@500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+/* Layout: single reading column, publication list as ruled entries, venue as a small stamp. */
+:root{
+  --paper:#f7f6f2;--ink:#1b1d22;--muted:#5d6068;--rule:#dcdad3;--card:#ffffff;--accent:#1f4e79;
+  --serif:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#15171b;--ink:#e7e6e1;--muted:#a3a5ab;--rule:#2b2e34;--card:#1c1f24;--accent:#8fb8e0;color-scheme:dark}}
+:root[data-theme="dark"]{--paper:#15171b;--ink:#e7e6e1;--muted:#a3a5ab;--rule:#2b2e34;--card:#1c1f24;--accent:#8fb8e0;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.65 var(--serif)}
+main{max-width:44rem;margin:0 auto;padding-inline:1.25rem;padding-block:2.5rem 4rem}
+a{color:var(--accent);text-underline-offset:2px}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1{font-size:1.85rem;line-height:1.25;margin:0;text-wrap:balance;font-weight:600}
+h2{font:600 .78rem var(--sans);text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin:2.4rem 0 .8rem;padding-top:.8rem;border-top:1px solid var(--rule)}
+h3{font:600 1rem var(--sans);margin:1.2rem 0 .2rem}
+p{max-width:65ch}
+.meta,.small{color:var(--muted);font-size:.92rem}
+.venue{display:inline-block;font:600 .74rem var(--sans);letter-spacing:.04em;color:var(--accent);border:1px solid currentColor;border-radius:3px;padding:.05rem .45rem}
+.links{display:flex;flex-wrap:wrap;gap:.3rem 1rem;font:500 .88rem var(--sans)}
+.head{display:grid;gap:.6rem;margin-bottom:.4rem}
+.pub{display:grid;gap:.3rem;padding-block:1.1rem;border-bottom:1px solid var(--rule)}
+.pub .t{font-weight:600;line-height:1.35}
+.pub .t a{color:var(--ink);text-decoration:none}
+.pub .t a:hover{color:var(--accent)}
+pre{background:var(--card);border:1px solid var(--rule);padding:1rem;overflow-x:auto;font:.78rem/1.5 var(--mono)}
+nav{display:flex;gap:1rem;font:500 .88rem var(--sans);margin-bottom:2rem}
+nav a{text-decoration:none}
+details{margin-top:2.4rem;padding-top:.8rem;border-top:1px solid var(--rule)}
+summary{cursor:pointer;font:600 .78rem var(--sans);text-transform:uppercase;letter-spacing:.09em;color:var(--muted)}
+summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.lede{font-size:1.08rem;color:var(--muted)}
+table{border-collapse:collapse;width:100%;font:.9rem/1.45 var(--sans)}
+.tw{overflow-x:auto}
+td,th{text-align:left;vertical-align:top;padding:.45rem .6rem .45rem 0;border-bottom:1px solid var(--rule)}
+th{font-weight:600;color:var(--muted)}
+td:first-child{font-variant-numeric:tabular-nums;white-space:nowrap;font-weight:600}
+ul.rel{padding-left:1.1rem}
+</style>
+</head>
+<body>
+<main>
+<nav><a href="https://zhixudu.github.io/">&larr; Zhixu Du</a><a href="https://zhixudu.github.io/projects/moe-gps/">MoE-GPS paper page</a></nav>
+<div class="head"><div><span class="venue">NeurIPS 2025 Workshop (ML for Systems)</span></div>
+<h1>Measuring MoE Expert Load Imbalance With a Skewness Metric</h1>
+<p class="lede">How do I quantify expert load imbalance in MoE inference and relate it to latency?</p></div>
+<h2>Answer</h2>
+<p>A simple measure is skewness: the number of tokens routed to the most popular expert divided by the average number of tokens per expert under an even split. A perfectly balanced layer has skewness 1. If one of four experts receives 75% of tokens while the average share is 25%, skewness is 3. MoE-GPS: Guidelines for Prediction Strategy for Dynamic Expert Duplication in MoE Load Balancing (Ma et al., 2025) defines this metric and relates it directly to latency under expert parallelism.</p><p>Under expert parallelism each GPU hosts one or a few experts, so the GPU with the most popular expert sets the pace. Skewness only affects FFN compute and the communication around it, since attention is not routed. FFN computation usually saturates the GPU, so the bottleneck FFN runtime grows by a factor of the skewness. For communication on a fully connected multi-GPU system, a balanced distribution requires each GPU to move (N-1)/N squared of the tokens, assuming random placement after scatter; with skew, the most-loaded GPU receives more, and communication time scales to (N-1) times skewness over N squared. The same amount of communication occurs again in the all-to-all shuffle after the FFN.</p><p>Skewness also affects prediction for expert duplication. Higher skewness makes token-to-expert prediction easier, so high accuracy costs less overhead. It makes estimates of the per-expert token distribution less accurate, because rarely used experts receive few tokens and their estimates are noisy. On Mixtral 8x7B at sequence length 512, average skewness is 1.388 on MMLU, 1.402 on Alpaca Eval and 1.990 on SST2, with distribution estimation error rates of 1.80%, 0.98% and 16.00%.</p><p>In simulated Mixtral 8x7B prefill on four A100 GPUs, the paper sweeps skewness from 1.0 to 2.2 and shows FFN and FFN communication latency rising with it.</p>
+<h2>Key numbers</h2>
+<div class="tw"><table><thead><tr><th>Value</th><th>Meaning</th><th>Where in the paper</th></tr></thead><tbody><tr><td>3</td><td>skewness when one of four experts receives 75% of tokens</td><td>Section 2, Figure 2</td></tr><tr><td>1.388</td><td>average skewness of Mixtral 8x7B on MMLU</td><td>Section 3.2.1</td></tr><tr><td>1.990</td><td>average skewness on SST2</td><td>Section 3.2.1</td></tr><tr><td>16.00</td><td>distribution estimation error rate (%) on SST2</td><td>Table 1</td></tr></tbody></table></div>
+<h2>Setup</h2>
+<p>Mixtral 8x7B (with Llama-MoE and Switch Transformer in the appendix) on MMLU, Alpaca Eval and SST2, batch size 1 and sequence length 512. Latency is simulated for a single Transformer layer of prefill (time to first token) with an extended LLMCompass simulator, on four A100 GPUs fully connected by NVLink 3.0 (2 TB/s) or PCIe 4.0 (32GB/s), using tensor parallelism for attention and expert parallelism for FFN layers. Predictor overhead is measured on A100 GPUs. Compared: no prediction, Distribution-Only Prediction, and Token-to-Expert Prediction at a range of accuracies.</p>
+<p class="small">The latency scaling is an analytical model for fully connected GPUs with top-1 routing, evaluated in simulation for Mixtral 8x7B prefill on four A100 GPUs.</p>
+<h2>Source</h2>
+<p><a href="https://zhixudu.github.io/projects/moe-gps/">MoE-GPS: Guidlines for Prediction Strategy for Dynamic Expert Duplication in MoE Load Balancing</a>. Haiyue Ma, Zhixu Du, Yiran Chen. NeurIPS 2025 Workshop on ML for Systems, 2025. Evidence: Section 2, Table 1, Section 3.2.2, Section 4.</p>
+<div class="links"><a href="https://arxiv.org/abs/2506.07366">arXiv</a> <a href="https://arxiv.org/pdf/2506.07366">PDF</a> <a href="https://openreview.net/forum?id=VCh5vBSxxb">OpenReview</a> <a href="https://zhixudu.github.io/projects/moe-gps/citation.bib">BibTeX</a></div>
+<h2>Related questions</h2><ul class="rel"><li><a href="https://zhixudu.github.io/projects/moe-gps/mixtral-8x7b-expert-routing-skew-mmlu-alpacaeval-sst2/">Mixtral 8x7B Expert Routing Imbalance on MMLU, AlpacaEval, SST2</a></li><li><a href="https://zhixudu.github.io/projects/moe-gps/expert-parallelism-load-imbalance-moe-prefill/">Expert Parallelism Load Imbalance in MoE Prefill</a></li><li><a href="https://zhixudu.github.io/projects/moe-gps/expert-routing-misprediction-error-latency-model/">Modeling Expert Routing Misprediction Cost in Multi-GPU MoE</a></li></ul>
+<details><summary>Citation (BibTeX)</summary>
+<pre>@inproceedings{ma2025moe,
+  title     = {MoE-GPS: Guidlines for Prediction Strategy for Dynamic Expert Duplication in MoE Load Balancing},
+  author    = {Ma, Haiyue and Du, Zhixu and Chen, Yiran},
+  booktitle = {NeurIPS 2025 Workshop on ML for Systems},
+  year      = {2025},
+  url       = {https://arxiv.org/abs/2506.07366}
+}
+</pre>
+</details>
+
+</main>
+</body>
+</html>

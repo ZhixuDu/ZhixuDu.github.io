@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Graded Blame Attribution for Multi-Agent LLM Pipeline Failures | AUDITA</title>
+<meta name="description" content="Give every agent a graded, replay-verified responsibility degree plus a duty/breach verdict; on GSM8K pipelines this cut judge error from 0.589 to 0.159.">
+<link rel="canonical" href="https://zhixudu.github.io/projects/audita/graded-blame-attribution-multi-agent-llm-failures/">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "Graded Blame Attribution for Multi-Agent LLM Pipeline Failures", "description": "Give every agent a graded, replay-verified responsibility degree plus a duty/breach verdict; on GSM8K pipelines this cut judge error from 0.589 to 0.159.", "about": "Graded failure attribution for LLM multi-agent systems", "url": "https://zhixudu.github.io/projects/audita/graded-blame-attribution-multi-agent-llm-failures/", "dateModified": "2026-11-10", "author": [{"@type": "Person", "name": "Zhixu Du"}, {"@type": "Person", "name": "Yiran Chen"}], "isBasedOn": {"@type": "ScholarlyArticle", "name": "AUDITA: certified auditing and causal attribution of adverse outcomes in autonomous multi-agent systems", "url": "https://arxiv.org/abs/2608.22160"}}</script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=IBM+Plex+Sans:wght@500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+/* Layout: single reading column, publication list as ruled entries, venue as a small stamp. */
+:root{
+  --paper:#f7f6f2;--ink:#1b1d22;--muted:#5d6068;--rule:#dcdad3;--card:#ffffff;--accent:#1f4e79;
+  --serif:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#15171b;--ink:#e7e6e1;--muted:#a3a5ab;--rule:#2b2e34;--card:#1c1f24;--accent:#8fb8e0;color-scheme:dark}}
+:root[data-theme="dark"]{--paper:#15171b;--ink:#e7e6e1;--muted:#a3a5ab;--rule:#2b2e34;--card:#1c1f24;--accent:#8fb8e0;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.65 var(--serif)}
+main{max-width:44rem;margin:0 auto;padding-inline:1.25rem;padding-block:2.5rem 4rem}
+a{color:var(--accent);text-underline-offset:2px}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1{font-size:1.85rem;line-height:1.25;margin:0;text-wrap:balance;font-weight:600}
+h2{font:600 .78rem var(--sans);text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin:2.4rem 0 .8rem;padding-top:.8rem;border-top:1px solid var(--rule)}
+h3{font:600 1rem var(--sans);margin:1.2rem 0 .2rem}
+p{max-width:65ch}
+.meta,.small{color:var(--muted);font-size:.92rem}
+.venue{display:inline-block;font:600 .74rem var(--sans);letter-spacing:.04em;color:var(--accent);border:1px solid currentColor;border-radius:3px;padding:.05rem .45rem}
+.links{display:flex;flex-wrap:wrap;gap:.3rem 1rem;font:500 .88rem var(--sans)}
+.head{display:grid;gap:.6rem;margin-bottom:.4rem}
+.pub{display:grid;gap:.3rem;padding-block:1.1rem;border-bottom:1px solid var(--rule)}
+.pub .t{font-weight:600;line-height:1.35}
+.pub .t a{color:var(--ink);text-decoration:none}
+.pub .t a:hover{color:var(--accent)}
+pre{background:var(--card);border:1px solid var(--rule);padding:1rem;overflow-x:auto;font:.78rem/1.5 var(--mono)}
+nav{display:flex;gap:1rem;font:500 .88rem var(--sans);margin-bottom:2rem}
+nav a{text-decoration:none}
+details{margin-top:2.4rem;padding-top:.8rem;border-top:1px solid var(--rule)}
+summary{cursor:pointer;font:600 .78rem var(--sans);text-transform:uppercase;letter-spacing:.09em;color:var(--muted)}
+summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.lede{font-size:1.08rem;color:var(--muted)}
+table{border-collapse:collapse;width:100%;font:.9rem/1.45 var(--sans)}
+.tw{overflow-x:auto}
+td,th{text-align:left;vertical-align:top;padding:.45rem .6rem .45rem 0;border-bottom:1px solid var(--rule)}
+th{font-weight:600;color:var(--muted)}
+td:first-child{font-variant-numeric:tabular-nums;white-space:nowrap;font-weight:600}
+ul.rel{padding-left:1.1rem}
+</style>
+</head>
+<body>
+<main>
+<nav><a href="https://zhixudu.github.io/">&larr; Zhixu Du</a><a href="https://zhixudu.github.io/projects/audita/">AUDITA paper page</a></nav>
+<div class="head"><div><span class="venue">arXiv preprint 2026</span></div>
+<h1>Graded Blame Attribution for Multi-Agent LLM Pipeline Failures</h1>
+<p class="lede">How can I attribute blame to multiple agents when an LLM multi-agent pipeline fails, instead of naming one culprit?</p></div>
+<h2>Answer</h2>
+<p>Instead of asking a judge to name one culprit, compute a graded responsibility degree for every agent from the recorded messages and combine it with a check of whether each agent breached a declared duty. In AUDITA (Du and Chen, 2026), each agent receives a Chockler-Halpern degree of responsibility between 0 and 1 for the adverse outcome, together with duty and breach findings, so a failure caused by two agents produces two nonzero grades instead of a single pointer.</p><p>The procedure has three steps. Every inter-agent message is signed and cites the messages it acts on. A production gate first removes messages whose committed effect never reached the outcome. The surviving candidates are graded under the modified Halpern-Pearl definition of actual causality, where a minimal cause X* with witness set W* receives rho = 1/(|X*|+|W*|), and an agent&#x27;s responsibility is the strongest grade of any cause containing one of its messages. Each reported cause is then re-executed under intervention to confirm that removing it averts the failure. The grades are degrees of responsibility, not shares, so they need not sum to one.</p><p>On live GSM8K pipelines, the Who&amp;When-style LLM judge had a responsibility error of 0.589. The full graded verdict, whose breach test may consult the correct answer, reached 0.170, and a deployable variant that never sees the answer key reached 0.159. Shapley-value attribution, the strongest baseline, reached 0.223. CAR / CausalFlow single-site counterfactual scoring reached 0.408, the same error as the method with its duty layer removed, which identifies the duty layer as the component that separates the verdict from the baselines.</p><p>The gold-free variant is not worse because the two breach tests disagree essentially only on honest errors, where a solver follows every duty and still reaches a wrong answer. Under negligence semantics such an agent is not culpable, and the ground truth agrees with the deployable test.</p>
+<h2>Key numbers</h2>
+<div class="tw"><table><thead><tr><th>Value</th><th>Meaning</th><th>Where in the paper</th></tr></thead><tbody><tr><td>0.589 ± 0.017</td><td>responsibility error of the Who&amp;When LLM judge (all-at-once)</td><td>Table 1</td></tr><tr><td>0.170 ± 0.035</td><td>responsibility error of the full, gold-informed verdict</td><td>Table 1</td></tr><tr><td>0.159 ± 0.030</td><td>responsibility error of the deployable verdict with no answer key</td><td>Table 1</td></tr><tr><td>0.223 ± 0.042</td><td>responsibility error of Shapley-value attribution</td><td>Table 1</td></tr><tr><td>0.408 ± 0.020</td><td>error of CAR / CausalFlow single-site scoring and of the duty-ablated verdict</td><td>Table 1</td></tr></tbody></table></div>
+<h2>Setup</h2>
+<p>Live corpus: a GSM8K multi-agent pipeline with a planner, three parallel solvers, an aggregator that carries a declared normative duty, and a verifier; three independently generated corpora of 480 cases each (one development, two holdouts), with fault injection calibrated to an empirical multi-agent failure taxonomy and every label replay-verified. Models are open-weight (Qwen2.5-72B-Instruct primary, Qwen2.5-7B-Instruct and Llama-3.1-8B-Instruct for additional study), served with vLLM on NVIDIA A100-80GB GPUs with greedy decoding and three generation seeds. Baselines: the Who&amp;When LLM judge, CAR / CausalFlow single-site counterfactual scoring, and Shapley-value attribution. Metric: responsibility error, the l1 distance between reported and true graded responsibility profiles.</p>
+<p class="small">Shown on GSM8K planner-solver-aggregator-verifier pipelines with open-weight models under replayable serving, scored against duty-aware Chockler-Halpern ground truth.</p>
+<h2>Source</h2>
+<p><a href="https://zhixudu.github.io/projects/audita/">AUDITA: certified auditing and causal attribution of adverse outcomes in autonomous multi-agent systems</a>. Zhixu Du, Yiran Chen. arXiv preprint 2026, 2026. Evidence: Results: Attribution on live multi-agent failures; Table 1.</p>
+<div class="links"><a href="https://arxiv.org/abs/2608.22160">arXiv</a> <a href="https://arxiv.org/pdf/2608.22160">PDF</a> <a href="https://zhixudu.github.io/projects/audita/citation.bib">BibTeX</a></div>
+<h2>Related questions</h2><ul class="rel"><li><a href="https://zhixudu.github.io/projects/audita/joint-causation-multi-agent-llm-failures/">Joint Causation in Multi-Agent LLM Pipeline Failures</a></li><li><a href="https://zhixudu.github.io/projects/audita/shapley-value-vs-causal-responsibility-llm-agents/">Shapley Values vs Causal Responsibility for Blaming LLM Agents</a></li><li><a href="https://zhixudu.github.io/projects/audita/duty-standard-changes-ai-agent-culpability/">How the Declared Duty Standard Changes AI Culpability Verdicts</a></li></ul>
+<details><summary>Citation (BibTeX)</summary>
+<pre>@misc{du2026audita,
+  title         = {AUDITA: certified auditing and causal attribution of adverse outcomes in autonomous multi-agent systems},
+  author        = {Du, Zhixu and Chen, Yiran},
+  year          = {2026},
+  eprint        = {2608.22160},
+  archivePrefix = {arXiv},
+  url           = {https://arxiv.org/abs/2608.22160}
+}
+</pre>
+</details>
+
+</main>
+</body>
+</html>

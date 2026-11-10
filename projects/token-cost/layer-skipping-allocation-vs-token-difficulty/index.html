@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Layer-Skipping Allocations vs Cross-Model Token Difficulty | Token cost (MoA)</title>
+<meta name="description" content="Weakly: FlexiDepth&#x27;s learned layer allocations correlated 0.209 (Qwen panel) and 0.213 (OLMo panel) with reproduction indices on 600 generations.">
+<link rel="canonical" href="https://zhixudu.github.io/projects/token-cost/layer-skipping-allocation-vs-token-difficulty/">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "Layer-Skipping Allocations vs Cross-Model Token Difficulty", "description": "Weakly: FlexiDepth's learned layer allocations correlated 0.209 (Qwen panel) and 0.213 (OLMo panel) with reproduction indices on 600 generations.", "about": "Agreement with learned layer-skipping allocations", "url": "https://zhixudu.github.io/projects/token-cost/layer-skipping-allocation-vs-token-difficulty/", "dateModified": "2026-11-10", "author": [{"@type": "Person", "name": "Zhixu Du"}, {"@type": "Person", "name": "Weijia Han"}, {"@type": "Person", "name": "Hai (Helen) Li"}, {"@type": "Person", "name": "Yiran Chen"}], "isBasedOn": {"@type": "ScholarlyArticle", "name": "What Does a Token Cost? A Mixture-of-Agents Measurement of Sufficient Per-Token Compute", "url": "https://arxiv.org/abs/2610.02491"}}</script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=IBM+Plex+Sans:wght@500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+/* Layout: single reading column, publication list as ruled entries, venue as a small stamp. */
+:root{
+  --paper:#f7f6f2;--ink:#1b1d22;--muted:#5d6068;--rule:#dcdad3;--card:#ffffff;--accent:#1f4e79;
+  --serif:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#15171b;--ink:#e7e6e1;--muted:#a3a5ab;--rule:#2b2e34;--card:#1c1f24;--accent:#8fb8e0;color-scheme:dark}}
+:root[data-theme="dark"]{--paper:#15171b;--ink:#e7e6e1;--muted:#a3a5ab;--rule:#2b2e34;--card:#1c1f24;--accent:#8fb8e0;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.65 var(--serif)}
+main{max-width:44rem;margin:0 auto;padding-inline:1.25rem;padding-block:2.5rem 4rem}
+a{color:var(--accent);text-underline-offset:2px}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1{font-size:1.85rem;line-height:1.25;margin:0;text-wrap:balance;font-weight:600}
+h2{font:600 .78rem var(--sans);text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin:2.4rem 0 .8rem;padding-top:.8rem;border-top:1px solid var(--rule)}
+h3{font:600 1rem var(--sans);margin:1.2rem 0 .2rem}
+p{max-width:65ch}
+.meta,.small{color:var(--muted);font-size:.92rem}
+.venue{display:inline-block;font:600 .74rem var(--sans);letter-spacing:.04em;color:var(--accent);border:1px solid currentColor;border-radius:3px;padding:.05rem .45rem}
+.links{display:flex;flex-wrap:wrap;gap:.3rem 1rem;font:500 .88rem var(--sans)}
+.head{display:grid;gap:.6rem;margin-bottom:.4rem}
+.pub{display:grid;gap:.3rem;padding-block:1.1rem;border-bottom:1px solid var(--rule)}
+.pub .t{font-weight:600;line-height:1.35}
+.pub .t a{color:var(--ink);text-decoration:none}
+.pub .t a:hover{color:var(--accent)}
+pre{background:var(--card);border:1px solid var(--rule);padding:1rem;overflow-x:auto;font:.78rem/1.5 var(--mono)}
+nav{display:flex;gap:1rem;font:500 .88rem var(--sans);margin-bottom:2rem}
+nav a{text-decoration:none}
+details{margin-top:2.4rem;padding-top:.8rem;border-top:1px solid var(--rule)}
+summary{cursor:pointer;font:600 .78rem var(--sans);text-transform:uppercase;letter-spacing:.09em;color:var(--muted)}
+summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.lede{font-size:1.08rem;color:var(--muted)}
+table{border-collapse:collapse;width:100%;font:.9rem/1.45 var(--sans)}
+.tw{overflow-x:auto}
+td,th{text-align:left;vertical-align:top;padding:.45rem .6rem .45rem 0;border-bottom:1px solid var(--rule)}
+th{font-weight:600;color:var(--muted)}
+td:first-child{font-variant-numeric:tabular-nums;white-space:nowrap;font-weight:600}
+ul.rel{padding-left:1.1rem}
+</style>
+</head>
+<body>
+<main>
+<nav><a href="https://zhixudu.github.io/">&larr; Zhixu Du</a><a href="https://zhixudu.github.io/projects/token-cost/">Token cost (MoA) paper page</a></nav>
+<div class="head"><div><span class="venue">Under review</span></div>
+<h1>Layer-Skipping Allocations vs Cross-Model Token Difficulty</h1>
+<p class="lede">Do layer-skipping models spend more depth on the tokens that need larger models?</p></div>
+<h2>Answer</h2>
+<p>There is a weak positive association overall. Du et al. (2026) compared FlexiDepth&#x27;s learned layer allocations with their reproduction indices, which record the smallest model in a family&#x27;s size ladder that reproduces each token given the correct prefix. On 600 released generations, the pooled partial rank correlations were 0.209 using the Qwen panel and 0.213 using the OLMo panel.</p><p>The data are the released FlexiPatterns records: 600 generations and 82,783 labelled native tokens from FlexiDepth, a learned layer-skipping policy within Llama-3-8B. Allocations and panel indices are aligned to words, the first word of each response is dropped because it includes prefill effects, each task split&#x27;s mean is subtracted, and the partial rank correlation controls for log position and word length.</p><p>The association varies widely by task (Table A7, 100 responses per split). Copy shows almost none, 0.061 and 0.062 over 24,770 words, and repeat is low at 0.130 and 0.120. Continue (0.277 and 0.267), summarize (0.283 and 0.294) and add (0.289 and 0.291) are moderate, and product is highest at 0.405 and 0.389. On the 68 verified addition outputs, the Qwen-panel correlation is 0.273. The multiplication split compares allocations on incorrect generations, with no verified subset.</p><p>The two quantities measure different things: the reproduction index asks which complete model can reproduce a token, while learned depth is an internal allocation within one model. The paper places this comparison alongside other within-model allocation methods such as CALM and Mixture-of-Depths.</p>
+<h2>Key numbers</h2>
+<div class="tw"><table><thead><tr><th>Value</th><th>Meaning</th><th>Where in the paper</th></tr></thead><tbody><tr><td>0.209</td><td>pooled partial correlation with FlexiDepth allocations, Qwen panel</td><td>Appendix C.3</td></tr><tr><td>0.213</td><td>pooled partial correlation, OLMo panel</td><td>Appendix C.3</td></tr><tr><td>0.061 ± 0.008</td><td>copy task, Qwen panel</td><td>Table A7</td></tr><tr><td>0.405 ± 0.011</td><td>product task, Qwen panel</td><td>Table A7</td></tr><tr><td>600</td><td>FlexiDepth generations analysed</td><td>Appendix C.3</td></tr></tbody></table></div>
+<h2>Setup</h2>
+<p>Released FlexiPatterns records of FlexiDepth (learned layer skipping in Llama-3-8B): 600 generations, 82,783 labelled native tokens across six task splits (copy, continue, summarize, repeat, add, product). Reproduction indices come from the Qwen2.5 and OLMo-2 panels; partial rank correlations control log position and word length, with bootstrap SDs.</p>
+<p class="small">Shown on FlexiDepth&#x27;s released task splits only; most splits are not checker-verified.</p>
+<h2>Source</h2>
+<p><a href="https://zhixudu.github.io/projects/token-cost/">What Does a Token Cost? A Mixture-of-Agents Measurement of Sufficient Per-Token Compute</a>. Zhixu Du, Weijia Han, Hai (Helen) Li, Yiran Chen. Under review, 2026. Evidence: Appendix C.3, Table A7.</p>
+<div class="links"><a href="https://arxiv.org/abs/2610.02491">arXiv</a> <a href="https://arxiv.org/pdf/2610.02491">PDF</a> <a href="https://zhixudu.github.io/projects/token-cost/citation.bib">BibTeX</a></div>
+<h2>Related questions</h2><ul class="rel"><li><a href="https://zhixudu.github.io/projects/token-cost/llm-families-same-hard-tokens-shared-difficulty/">Do Different LLM Families Find the Same Tokens Hard?</a></li><li><a href="https://zhixudu.github.io/projects/token-cost/per-token-compute-requirements-llm/">Measuring How Much Compute Each LLM Token Needs</a></li><li><a href="https://zhixudu.github.io/projects/token-cost/token-type-predict-tokens-needing-larger-model/">Do Numbers or Punctuation Predict Tokens Needing Larger Models?</a></li></ul>
+<details><summary>Citation (BibTeX)</summary>
+<pre>@misc{du2026token,
+  title         = {What Does a Token Cost? A Mixture-of-Agents Measurement of Sufficient Per-Token Compute},
+  author        = {Du, Zhixu and Han, Weijia and Li, Hai and Chen, Yiran},
+  year          = {2026},
+  eprint        = {2610.02491},
+  archivePrefix = {arXiv},
+  url           = {https://arxiv.org/abs/2610.02491}
+}
+</pre>
+</details>
+
+</main>
+</body>
+</html>

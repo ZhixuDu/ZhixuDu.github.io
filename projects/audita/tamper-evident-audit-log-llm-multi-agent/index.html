@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tamper-Evident Audit Logs for LLM Multi-Agent Systems | AUDITA</title>
+<meta name="description" content="Sign each message with author, payload, citations and committed effect, seal it in Merkle epochs, and forgery can no longer move the verdict.">
+<link rel="canonical" href="https://zhixudu.github.io/projects/audita/tamper-evident-audit-log-llm-multi-agent/">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "Tamper-Evident Audit Logs for LLM Multi-Agent Systems", "description": "Sign each message with author, payload, citations and committed effect, seal it in Merkle epochs, and forgery can no longer move the verdict.", "about": "Tamper-evident signed logs for agent accountability", "url": "https://zhixudu.github.io/projects/audita/tamper-evident-audit-log-llm-multi-agent/", "dateModified": "2026-11-10", "author": [{"@type": "Person", "name": "Zhixu Du"}, {"@type": "Person", "name": "Yiran Chen"}], "isBasedOn": {"@type": "ScholarlyArticle", "name": "AUDITA: certified auditing and causal attribution of adverse outcomes in autonomous multi-agent systems", "url": "https://arxiv.org/abs/2608.22160"}}</script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=IBM+Plex+Sans:wght@500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+/* Layout: single reading column, publication list as ruled entries, venue as a small stamp. */
+:root{
+  --paper:#f7f6f2;--ink:#1b1d22;--muted:#5d6068;--rule:#dcdad3;--card:#ffffff;--accent:#1f4e79;
+  --serif:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#15171b;--ink:#e7e6e1;--muted:#a3a5ab;--rule:#2b2e34;--card:#1c1f24;--accent:#8fb8e0;color-scheme:dark}}
+:root[data-theme="dark"]{--paper:#15171b;--ink:#e7e6e1;--muted:#a3a5ab;--rule:#2b2e34;--card:#1c1f24;--accent:#8fb8e0;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.65 var(--serif)}
+main{max-width:44rem;margin:0 auto;padding-inline:1.25rem;padding-block:2.5rem 4rem}
+a{color:var(--accent);text-underline-offset:2px}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1{font-size:1.85rem;line-height:1.25;margin:0;text-wrap:balance;font-weight:600}
+h2{font:600 .78rem var(--sans);text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin:2.4rem 0 .8rem;padding-top:.8rem;border-top:1px solid var(--rule)}
+h3{font:600 1rem var(--sans);margin:1.2rem 0 .2rem}
+p{max-width:65ch}
+.meta,.small{color:var(--muted);font-size:.92rem}
+.venue{display:inline-block;font:600 .74rem var(--sans);letter-spacing:.04em;color:var(--accent);border:1px solid currentColor;border-radius:3px;padding:.05rem .45rem}
+.links{display:flex;flex-wrap:wrap;gap:.3rem 1rem;font:500 .88rem var(--sans)}
+.head{display:grid;gap:.6rem;margin-bottom:.4rem}
+.pub{display:grid;gap:.3rem;padding-block:1.1rem;border-bottom:1px solid var(--rule)}
+.pub .t{font-weight:600;line-height:1.35}
+.pub .t a{color:var(--ink);text-decoration:none}
+.pub .t a:hover{color:var(--accent)}
+pre{background:var(--card);border:1px solid var(--rule);padding:1rem;overflow-x:auto;font:.78rem/1.5 var(--mono)}
+nav{display:flex;gap:1rem;font:500 .88rem var(--sans);margin-bottom:2rem}
+nav a{text-decoration:none}
+details{margin-top:2.4rem;padding-top:.8rem;border-top:1px solid var(--rule)}
+summary{cursor:pointer;font:600 .78rem var(--sans);text-transform:uppercase;letter-spacing:.09em;color:var(--muted)}
+summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.lede{font-size:1.08rem;color:var(--muted)}
+table{border-collapse:collapse;width:100%;font:.9rem/1.45 var(--sans)}
+.tw{overflow-x:auto}
+td,th{text-align:left;vertical-align:top;padding:.45rem .6rem .45rem 0;border-bottom:1px solid var(--rule)}
+th{font-weight:600;color:var(--muted)}
+td:first-child{font-variant-numeric:tabular-nums;white-space:nowrap;font-weight:600}
+ul.rel{padding-left:1.1rem}
+</style>
+</head>
+<body>
+<main>
+<nav><a href="https://zhixudu.github.io/">&larr; Zhixu Du</a><a href="https://zhixudu.github.io/projects/audita/">AUDITA paper page</a></nav>
+<div class="head"><div><span class="venue">arXiv preprint 2026</span></div>
+<h1>Tamper-Evident Audit Logs for LLM Multi-Agent Systems</h1>
+<p class="lede">What should a tamper-evident audit log for LLM multi-agent systems contain?</p></div>
+<h2>Answer</h2>
+<p>AUDITA (Du and Chen, 2026) specifies a message format for this purpose (Definition 1). Each inter-agent message contains its author, its payload, a citation set of hashes of the messages it acts on, an effect predicate stating the world- or work-state change the author commits to, and an Ed25519 signature over those fields, together with pinned seed and model identifiers for replay. Messages are sealed into append-only epochs: when an epoch closes, the recorder signs the Merkle root of its messages and chains it to the previous block&#x27;s hash.</p><p>Each field has a job. A citation is an admission by the author that a message was issued because of another, so the causal graph is authored rather than inferred. The effect predicate lets an auditor check whether a command&#x27;s effect actually arrived. The seeds make counterfactual replay possible. The paper notes that standard agent-observability logs lack exactly these three fields. On the bus, uncited commands are rejected and every delivery is acknowledged, so dropped messages are detectable. Verification splits the record into certified, suspect and missing sets, and attribution runs only on the certified set.</p><p>Two guarantees follow. Under Proposition 3, forgeries never enter the certified graph and leave the verdict unchanged, while deletions can only widen a fully certified agent&#x27;s responsibility interval and never raise its lower end. Under Theorem 3, erasing evidence produces flagged uncertainty attributed to the item&#x27;s author, never a clean acquittal.</p><p>The paper replayed the same forgeries against the certified record and against an unsigned copy holding the same text. The unsigned copy was driven to 0.365 error and framed an innocent agent in all 450 probes, while the certified verdict stayed at 0.000. Across 450 deletion cells the widened interval always contained the true responsibility, with error at most 0.122. Overhead was 393 B per signed message and 118 KB per incident.</p>
+<h2>Key numbers</h2>
+<div class="tw"><table><thead><tr><th>Value</th><th>Meaning</th><th>Where in the paper</th></tr></thead><tbody><tr><td>0.365</td><td>error of an unsigned log under forgery</td><td>Figure 3b; Results, Record attacks</td></tr><tr><td>450</td><td>forgery probes, all of which framed an innocent on the unsigned substrate</td><td>Results, Record attacks</td></tr><tr><td>0.000</td><td>error of the certified verdict under the same forgeries</td><td>Figure 3b</td></tr><tr><td>0.122</td><td>maximum verdict error across 450 deletion cells</td><td>Results, Record attacks</td></tr><tr><td>393 B</td><td>storage overhead per signed message (118 KB per incident)</td><td>Extended Data Table 2</td></tr></tbody></table></div>
+<h2>Setup</h2>
+<p>Reference implementation in Python with Ed25519 signing, Merkle epoch commitments in the style of transparency logs, enforced citation and delivery receipts, and a three-tier store (hot append-only log, content-addressed payloads, cold sealed epochs). Record attacks (forgery and deletion at rising corruption rates) were replayed on CulpaBench incidents against the certified record and against an unsigned copy that keeps message text but drops signatures and seals.</p>
+<p class="small">Guarantees assume unforgeable signatures, collision-resistant hashing, attacks against already sealed epochs, and keys that are never stolen; evidence is from simulated incidents.</p>
+<h2>Source</h2>
+<p><a href="https://zhixudu.github.io/projects/audita/">AUDITA: certified auditing and causal attribution of adverse outcomes in autonomous multi-agent systems</a>. Zhixu Du, Yiran Chen. arXiv preprint 2026, 2026. Evidence: Methods: accountable command graph, Definition 1, Proposition 3; Figure 3b; Extended Data Fig. 1; Supplementary Note S7.</p>
+<div class="links"><a href="https://arxiv.org/abs/2608.22160">arXiv</a> <a href="https://arxiv.org/pdf/2608.22160">PDF</a> <a href="https://zhixudu.github.io/projects/audita/citation.bib">BibTeX</a></div>
+<h2>Related questions</h2><ul class="rel"><li><a href="https://zhixudu.github.io/projects/audita/framing-attacks-causal-responsibility-ai-agents/">Framing Attacks on Causal Responsibility of AI Agents</a></li><li><a href="https://zhixudu.github.io/projects/audita/cost-exact-halpern-pearl-actual-causation/">Computational Cost of Exact Halpern-Pearl Actual Causation</a></li><li><a href="https://zhixudu.github.io/projects/audita/eu-ai-act-logging-liability-multi-robot-llm/">EU AI Act Event Logging That Supports Liability Decisions</a></li></ul>
+<details><summary>Citation (BibTeX)</summary>
+<pre>@misc{du2026audita,
+  title         = {AUDITA: certified auditing and causal attribution of adverse outcomes in autonomous multi-agent systems},
+  author        = {Du, Zhixu and Chen, Yiran},
+  year          = {2026},
+  eprint        = {2608.22160},
+  archivePrefix = {arXiv},
+  url           = {https://arxiv.org/abs/2608.22160}
+}
+</pre>
+</details>
+
+</main>
+</body>
+</html>

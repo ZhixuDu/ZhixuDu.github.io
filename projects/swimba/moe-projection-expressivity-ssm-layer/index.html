@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Expressivity Gain From Soft Routing Over Linear Experts in SSMs | Swimba</title>
+<meta name="description" content="Yes. With softmax routing over linear expert projections, a one-recurrence MoE-SSM layer can represent the sigmoid, which a single-expert layer cannot.">
+<link rel="canonical" href="https://zhixudu.github.io/projects/swimba/moe-projection-expressivity-ssm-layer/">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "Expressivity Gain From Soft Routing Over Linear Experts in SSMs", "description": "Yes. With softmax routing over linear expert projections, a one-recurrence MoE-SSM layer can represent the sigmoid, which a single-expert layer cannot.", "about": "Expressivity gain from routed linear projections", "url": "https://zhixudu.github.io/projects/swimba/moe-projection-expressivity-ssm-layer/", "dateModified": "2026-11-10", "author": [{"@type": "Person", "name": "Zhixu Du"}, {"@type": "Person", "name": "Krishna Teja Chitty-Venkata"}, {"@type": "Person", "name": "Murali Emani"}, {"@type": "Person", "name": "Venkatram Vishwanath"}, {"@type": "Person", "name": "Hai (Helen) Li"}, {"@type": "Person", "name": "Yiran Chen"}], "isBasedOn": {"@type": "ScholarlyArticle", "name": "Swimba: Switch Mamba Model Scales State Space Models", "url": "https://arxiv.org/abs/2603.06938"}}</script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=IBM+Plex+Sans:wght@500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+/* Layout: single reading column, publication list as ruled entries, venue as a small stamp. */
+:root{
+  --paper:#f7f6f2;--ink:#1b1d22;--muted:#5d6068;--rule:#dcdad3;--card:#ffffff;--accent:#1f4e79;
+  --serif:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#15171b;--ink:#e7e6e1;--muted:#a3a5ab;--rule:#2b2e34;--card:#1c1f24;--accent:#8fb8e0;color-scheme:dark}}
+:root[data-theme="dark"]{--paper:#15171b;--ink:#e7e6e1;--muted:#a3a5ab;--rule:#2b2e34;--card:#1c1f24;--accent:#8fb8e0;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.65 var(--serif)}
+main{max-width:44rem;margin:0 auto;padding-inline:1.25rem;padding-block:2.5rem 4rem}
+a{color:var(--accent);text-underline-offset:2px}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1{font-size:1.85rem;line-height:1.25;margin:0;text-wrap:balance;font-weight:600}
+h2{font:600 .78rem var(--sans);text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin:2.4rem 0 .8rem;padding-top:.8rem;border-top:1px solid var(--rule)}
+h3{font:600 1rem var(--sans);margin:1.2rem 0 .2rem}
+p{max-width:65ch}
+.meta,.small{color:var(--muted);font-size:.92rem}
+.venue{display:inline-block;font:600 .74rem var(--sans);letter-spacing:.04em;color:var(--accent);border:1px solid currentColor;border-radius:3px;padding:.05rem .45rem}
+.links{display:flex;flex-wrap:wrap;gap:.3rem 1rem;font:500 .88rem var(--sans)}
+.head{display:grid;gap:.6rem;margin-bottom:.4rem}
+.pub{display:grid;gap:.3rem;padding-block:1.1rem;border-bottom:1px solid var(--rule)}
+.pub .t{font-weight:600;line-height:1.35}
+.pub .t a{color:var(--ink);text-decoration:none}
+.pub .t a:hover{color:var(--accent)}
+pre{background:var(--card);border:1px solid var(--rule);padding:1rem;overflow-x:auto;font:.78rem/1.5 var(--mono)}
+nav{display:flex;gap:1rem;font:500 .88rem var(--sans);margin-bottom:2rem}
+nav a{text-decoration:none}
+details{margin-top:2.4rem;padding-top:.8rem;border-top:1px solid var(--rule)}
+summary{cursor:pointer;font:600 .78rem var(--sans);text-transform:uppercase;letter-spacing:.09em;color:var(--muted)}
+summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.lede{font-size:1.08rem;color:var(--muted)}
+table{border-collapse:collapse;width:100%;font:.9rem/1.45 var(--sans)}
+.tw{overflow-x:auto}
+td,th{text-align:left;vertical-align:top;padding:.45rem .6rem .45rem 0;border-bottom:1px solid var(--rule)}
+th{font-weight:600;color:var(--muted)}
+td:first-child{font-variant-numeric:tabular-nums;white-space:nowrap;font-weight:600}
+ul.rel{padding-left:1.1rem}
+</style>
+</head>
+<body>
+<main>
+<nav><a href="https://zhixudu.github.io/">&larr; Zhixu Du</a><a href="https://zhixudu.github.io/projects/swimba/">Swimba paper page</a></nav>
+<div class="head"><div><span class="venue">NeurIPS 2026</span></div>
+<h1>Expressivity Gain From Soft Routing Over Linear Experts in SSMs</h1>
+<p class="lede">Does a mixture-of-experts projection strictly increase the expressivity of an SSM layer with one state update?</p></div>
+<h2>Answer</h2>
+<p>Yes, in a specific sense. In Swimba (Du et al., 2026), Theorem 5 shows that with softmax routing over linear expert projections, the MoE-parameterized SSM layer can represent strictly more functions than any single-expert linear-projection layer, while both execute exactly one state update. This addresses whether parameter-space MoE is only an efficiency device or also adds modeling power.</p><p>The setting is a one-step specialization: sequence length T = 1, state and channel size N = P = 1, initial state zero, and A = 0. Each expert produces its streams B, C and X as linear projections of the input, and routing uses π = softmax(g) with logits g linear in the input. The construction uses E = 2 experts, both active. Expert 1 injects 0 and expert 2 injects 1, and both use readout 1, so the output equals the routing weight on expert 2. Choosing logits 0 and x makes that weight e^x / (1 + e^x), the logistic sigmoid σ(x).</p><p>A single-expert layer in the same setting outputs the product C(x) B(x) X&#x27;(x) of three linear functions of x, which is a polynomial of degree at most 3. Any nonconstant polynomial diverges as |x| grows, while σ(x) stays in (0, 1), and σ is not a polynomial, so it cannot be represented. Hence the MoE function class strictly contains the single-expert one.</p><p>The input dependence comes from the router: it introduces an input-dependent combination over several parameter maps, a nonlinearity that the linear projections alone lack. The result is about representable function classes in a simplified setting and does not quantify gains in trained models; for the trained Swimba-14B the paper reports an average benchmark accuracy of 70.81 versus 69.47 for Nemotron-H-8B at nearly the same FLOPs.</p>
+<h2>Key numbers</h2>
+<div class="tw"><table><thead><tr><th>Value</th><th>Meaning</th><th>Where in the paper</th></tr></thead><tbody><tr><td>2</td><td>Experts used in the construction that realizes the logistic sigmoid</td><td>Appendix A.5</td></tr><tr><td>3</td><td>Maximum polynomial degree representable by a single-expert layer in this setting</td><td>Appendix A.5</td></tr></tbody></table></div>
+<h2>Setup</h2>
+<p>One-step specialization (T = 1, N = P = 1, h_0 = 0, A = 0) of the MoE-parameterized SSM with linear expert projections and softmax routing over linear logits; proof in Appendix A.5. Constant expert outputs are realized via a bias or appended constant feature.</p>
+<p class="small">The strict-containment result is proved for a one-step, one-dimensional specialization and does not measure expressivity in multi-step trained models.</p>
+<h2>Source</h2>
+<p><a href="https://zhixudu.github.io/projects/swimba/">Swimba: Switch Mamba Model Scales State Space Models</a>. Zhixu Du, Krishna Teja Chitty-Venkata, Murali Emani, Venkatram Vishwanath, Hai (Helen) Li, Yiran Chen. Advances in Neural Information Processing Systems 39 (NeurIPS 2026), 2026. Evidence: Section 3.4 Theorem 5, Appendix A.5.</p>
+<div class="links"><a href="https://arxiv.org/abs/2603.06938">arXiv</a> <a href="https://arxiv.org/pdf/2603.06938">PDF</a> <a href="https://zhixudu.github.io/projects/swimba/citation.bib">BibTeX</a></div>
+<h2>Related questions</h2><ul class="rel"><li><a href="https://zhixudu.github.io/projects/swimba/moe-routing-mamba2-ssd-kernel-compatibility/">MoE Routing Compatible With the Mamba-2 SSD Kernel</a></li><li><a href="https://zhixudu.github.io/projects/swimba/parameter-mixing-vs-output-mixing-linear-recurrence/">When Parameter Mixing Equals Output Mixing in Linear Recurrences</a></li><li><a href="https://zhixudu.github.io/projects/swimba/mixture-of-experts-in-mamba-token-mixer/">Mixture-of-Experts Inside the Mamba Token Mixer</a></li></ul>
+<details><summary>Citation (BibTeX)</summary>
+<pre>@inproceedings{du2026swimba,
+  title     = {Swimba: Switch Mamba Model Scales State Space Models},
+  author    = {Du, Zhixu and Chitty-Venkata, Krishna Teja and Emani, Murali and Vishwanath, Venkatram and Li, Hai and Chen, Yiran},
+  booktitle = {Advances in Neural Information Processing Systems 39 (NeurIPS 2026)},
+  year      = {2026},
+  url       = {https://arxiv.org/abs/2603.06938}
+}
+</pre>
+</details>
+
+</main>
+</body>
+</html>

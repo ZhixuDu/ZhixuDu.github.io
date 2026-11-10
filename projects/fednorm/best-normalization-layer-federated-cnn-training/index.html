@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Which Normalization Layer to Use for Federated CNN Training | FedNorm</title>
+<meta name="description" content="Layer normalization: it has no cross-client running statistics, converged fastest, and gave the best or near-best accuracy on CNN, VGG-11 and ResNet-18.">
+<link rel="canonical" href="https://zhixudu.github.io/projects/fednorm/best-normalization-layer-federated-cnn-training/">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "Which Normalization Layer to Use for Federated CNN Training", "description": "Layer normalization: it has no cross-client running statistics, converged fastest, and gave the best or near-best accuracy on CNN, VGG-11 and ResNet-18.", "about": "Layer normalization as BatchNorm replacement in FL", "url": "https://zhixudu.github.io/projects/fednorm/best-normalization-layer-federated-cnn-training/", "dateModified": "2026-11-10", "author": [{"@type": "Person", "name": "Zhixu Du"}, {"@type": "Person", "name": "Jingwei Sun"}, {"@type": "Person", "name": "Ang Li"}, {"@type": "Person", "name": "Pin-Yu Chen"}, {"@type": "Person", "name": "Jianyi Zhang"}, {"@type": "Person", "name": "Hai (Helen) Li"}, {"@type": "Person", "name": "Yiran Chen"}], "isBasedOn": {"@type": "ScholarlyArticle", "name": "Rethinking Normalization Methods in Federated Learning", "url": "https://arxiv.org/abs/2210.03277"}}</script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=IBM+Plex+Sans:wght@500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+/* Layout: single reading column, publication list as ruled entries, venue as a small stamp. */
+:root{
+  --paper:#f7f6f2;--ink:#1b1d22;--muted:#5d6068;--rule:#dcdad3;--card:#ffffff;--accent:#1f4e79;
+  --serif:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#15171b;--ink:#e7e6e1;--muted:#a3a5ab;--rule:#2b2e34;--card:#1c1f24;--accent:#8fb8e0;color-scheme:dark}}
+:root[data-theme="dark"]{--paper:#15171b;--ink:#e7e6e1;--muted:#a3a5ab;--rule:#2b2e34;--card:#1c1f24;--accent:#8fb8e0;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.65 var(--serif)}
+main{max-width:44rem;margin:0 auto;padding-inline:1.25rem;padding-block:2.5rem 4rem}
+a{color:var(--accent);text-underline-offset:2px}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1{font-size:1.85rem;line-height:1.25;margin:0;text-wrap:balance;font-weight:600}
+h2{font:600 .78rem var(--sans);text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin:2.4rem 0 .8rem;padding-top:.8rem;border-top:1px solid var(--rule)}
+h3{font:600 1rem var(--sans);margin:1.2rem 0 .2rem}
+p{max-width:65ch}
+.meta,.small{color:var(--muted);font-size:.92rem}
+.venue{display:inline-block;font:600 .74rem var(--sans);letter-spacing:.04em;color:var(--accent);border:1px solid currentColor;border-radius:3px;padding:.05rem .45rem}
+.links{display:flex;flex-wrap:wrap;gap:.3rem 1rem;font:500 .88rem var(--sans)}
+.head{display:grid;gap:.6rem;margin-bottom:.4rem}
+.pub{display:grid;gap:.3rem;padding-block:1.1rem;border-bottom:1px solid var(--rule)}
+.pub .t{font-weight:600;line-height:1.35}
+.pub .t a{color:var(--ink);text-decoration:none}
+.pub .t a:hover{color:var(--accent)}
+pre{background:var(--card);border:1px solid var(--rule);padding:1rem;overflow-x:auto;font:.78rem/1.5 var(--mono)}
+nav{display:flex;gap:1rem;font:500 .88rem var(--sans);margin-bottom:2rem}
+nav a{text-decoration:none}
+details{margin-top:2.4rem;padding-top:.8rem;border-top:1px solid var(--rule)}
+summary{cursor:pointer;font:600 .78rem var(--sans);text-transform:uppercase;letter-spacing:.09em;color:var(--muted)}
+summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.lede{font-size:1.08rem;color:var(--muted)}
+table{border-collapse:collapse;width:100%;font:.9rem/1.45 var(--sans)}
+.tw{overflow-x:auto}
+td,th{text-align:left;vertical-align:top;padding:.45rem .6rem .45rem 0;border-bottom:1px solid var(--rule)}
+th{font-weight:600;color:var(--muted)}
+td:first-child{font-variant-numeric:tabular-nums;white-space:nowrap;font-weight:600}
+ul.rel{padding-left:1.1rem}
+</style>
+</head>
+<body>
+<main>
+<nav><a href="https://zhixudu.github.io/">&larr; Zhixu Du</a><a href="https://zhixudu.github.io/projects/fednorm/">FedNorm paper page</a></nav>
+<div class="head"><div><span class="venue">DistributedML @ CoNEXT 2022</span></div>
+<h1>Which Normalization Layer to Use for Federated CNN Training</h1>
+<p class="lede">Which normalization layer should I use for federated training of CNNs?</p></div>
+<h2>Answer</h2>
+<p>For federated training of CNNs with FedAvg, Rethinking Normalization Methods in Federated Learning (Du et al., 2022) recommends layer normalization (LayerNorm). In their non-IID CIFAR-10 experiments it converged fastest and reached the highest or close to the highest accuracy on all three architectures tested: a small CNN, VGG-11 and ResNet-18.</p><p>The reasoning has two parts. First, normalization is needed: batch and layer normalization are scale-invariant, so the gradient of the preceding weights is orthogonal to those weights and large weights receive smaller gradients. This keeps weight norms on different clients close to their shared initialization, so no client&#x27;s update dominates the average. Second, BatchNorm fails because its running statistics are computed per device, and external covariate shift (the divergence of channel statistics across devices caused by independent local training) means the averaged statistics on the server do not match the aggregated model&#x27;s features. LayerNorm normalizes across channels within each sample, so it has no statistics to average and does not suffer from the cross-device mismatch.</p><p>Accuracy after 5000 rounds (Table 2): on VGG-11, LayerNorm reaches 63.52%, GroupNorm 63.10%, InstanceNorm 53.46%, BatchNorm 51.56% and no normalization 36.51%. On the small CNN, LayerNorm reaches 52.02%, the highest among all methods, against 33.29% for BatchNorm. On ResNet-18, LayerNorm reaches 59.70% against 34.38% for BatchNorm; no normalization is slightly higher at 60.73%, which the authors attribute to residual connections and which requires careful hyperparameter selection to train stably.</p><p>GroupNorm behaves similarly to LayerNorm in all experiments, since both compute statistics within a sample. The authors note that GroupNorm, as an instance-based method, can be sensitive to noise on data samples.</p>
+<h2>Key numbers</h2>
+<div class="tw"><table><thead><tr><th>Value</th><th>Meaning</th><th>Where in the paper</th></tr></thead><tbody><tr><td>63.52±1.44</td><td>VGG-11 accuracy (%) with LayerNorm</td><td>Table 2</td></tr><tr><td>51.56±2.22</td><td>VGG-11 accuracy (%) with BatchNorm</td><td>Table 2</td></tr><tr><td>52.02±0.76</td><td>CNN accuracy (%) with LayerNorm, highest for that model</td><td>Table 2</td></tr><tr><td>59.70±0.21</td><td>ResNet-18 accuracy (%) with LayerNorm</td><td>Table 2</td></tr><tr><td>60.73±0.53</td><td>ResNet-18 accuracy (%) with no normalization</td><td>Table 2</td></tr></tbody></table></div>
+<h2>Setup</h2>
+<p>FedAvg on CIFAR-10 with a pathological non-IID split following McMahan et al. (2017): 100 devices, each holding 2 random classes with 100 samples per class, and 10 randomly sampled devices per communication round. Local epochs E = 10, batch size 64, SGD with learning rate 0.01, 5000 communication rounds, three random seeds. Architectures: VGG-11, ResNet-18 and a small CNN (two 5x5 conv layers and three fully connected layers). Compared normalization: group, layer, instance and batch normalization, fixed batch normalization (training statistics not aggregated), and no normalization. Hardware: a server with two Intel Xeon E5-2687W CPUs and four Nvidia TITAN RTX GPUs.</p>
+<p class="small">Shown with FedAvg on CIFAR-10 under a label-skew split of 2 classes per device across 100 devices, for VGG-11, ResNet-18 and a small CNN, averaged over three seeds after 5000 rounds.</p>
+<h2>Source</h2>
+<p><a href="https://zhixudu.github.io/projects/fednorm/">Rethinking Normalization Methods in Federated Learning</a>. Zhixu Du, Jingwei Sun, Ang Li, Pin-Yu Chen, Jianyi Zhang, Hai (Helen) Li, Yiran Chen. Proceedings of the 3rd International Workshop on Distributed Machine Learning (DistributedML &#x27;22), 2022. Evidence: Section 3.4; Table 2; Figure 4.</p>
+<div class="links"><a href="https://arxiv.org/abs/2210.03277">arXiv</a> <a href="https://arxiv.org/pdf/2210.03277">PDF</a> <a href="https://doi.org/10.1145/3565010.3569062">Publisher</a> <a href="https://github.com/ZhixuDu/FedNorm">Code</a> <a href="https://zhixudu.github.io/projects/fednorm/citation.bib">BibTeX</a></div>
+<h2>Related questions</h2><ul class="rel"><li><a href="https://zhixudu.github.io/projects/fednorm/groupnorm-instancenorm-layernorm-batchnorm-fedavg-cifar10/">GroupNorm vs InstanceNorm vs LayerNorm vs BatchNorm in FedAvg</a></li><li><a href="https://zhixudu.github.io/projects/fednorm/group-norm-vs-layer-norm-federated-learning/">GroupNorm vs LayerNorm Accuracy in Federated Learning</a></li><li><a href="https://zhixudu.github.io/projects/fednorm/normalization-convergence-speed-fedavg-communication-rounds/">Normalization Layers and FedAvg Convergence Speed</a></li></ul>
+<details><summary>Citation (BibTeX)</summary>
+<pre>@inproceedings{du2022fednorm,
+  title     = {Rethinking Normalization Methods in Federated Learning},
+  author    = {Du, Zhixu and Sun, Jingwei and Li, Ang and Chen, Pin-Yu and Zhang, Jianyi and Li, Hai and Chen, Yiran},
+  booktitle = {Proceedings of the 3rd International Workshop on Distributed Machine Learning (DistributedML &#x27;22)},
+  year      = {2022},
+  doi       = {10.1145/3565010.3569062},
+  url       = {https://arxiv.org/abs/2210.03277}
+}
+</pre>
+</details>
+
+</main>
+</body>
+</html>

@@ -5,7 +5,6 @@
 - Authors: Zhixu Du, Yiran Chen
 - arXiv: https://arxiv.org/abs/2608.22160
 - Project page: https://zhixudu.github.io/projects/audita/
-- Code: https://github.com/ZhixuDu/audita
 
 ## Extended abstract
 

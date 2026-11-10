@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Token-Level Model Selection Among LLMs as an MDP | Token cost (MoA)</title>
+<meta name="description" content="Treat each LLM as a policy and model choice as a per-token action under a compute budget; on a fixed reference, pick the cheapest matching model.">
+<link rel="canonical" href="https://zhixudu.github.io/projects/token-cost/token-level-model-selection-mdp-llm/">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "Token-Level Model Selection Among LLMs as an MDP", "description": "Treat each LLM as a policy and model choice as a per-token action under a compute budget; on a fixed reference, pick the cheapest matching model.", "about": "Token-level mixture-of-agents as decision process", "url": "https://zhixudu.github.io/projects/token-cost/token-level-model-selection-mdp-llm/", "dateModified": "2026-11-10", "author": [{"@type": "Person", "name": "Zhixu Du"}, {"@type": "Person", "name": "Weijia Han"}, {"@type": "Person", "name": "Hai (Helen) Li"}, {"@type": "Person", "name": "Yiran Chen"}], "isBasedOn": {"@type": "ScholarlyArticle", "name": "What Does a Token Cost? A Mixture-of-Agents Measurement of Sufficient Per-Token Compute", "url": "https://arxiv.org/abs/2610.02491"}}</script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=IBM+Plex+Sans:wght@500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+/* Layout: single reading column, publication list as ruled entries, venue as a small stamp. */
+:root{
+  --paper:#f7f6f2;--ink:#1b1d22;--muted:#5d6068;--rule:#dcdad3;--card:#ffffff;--accent:#1f4e79;
+  --serif:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#15171b;--ink:#e7e6e1;--muted:#a3a5ab;--rule:#2b2e34;--card:#1c1f24;--accent:#8fb8e0;color-scheme:dark}}
+:root[data-theme="dark"]{--paper:#15171b;--ink:#e7e6e1;--muted:#a3a5ab;--rule:#2b2e34;--card:#1c1f24;--accent:#8fb8e0;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.65 var(--serif)}
+main{max-width:44rem;margin:0 auto;padding-inline:1.25rem;padding-block:2.5rem 4rem}
+a{color:var(--accent);text-underline-offset:2px}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1{font-size:1.85rem;line-height:1.25;margin:0;text-wrap:balance;font-weight:600}
+h2{font:600 .78rem var(--sans);text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin:2.4rem 0 .8rem;padding-top:.8rem;border-top:1px solid var(--rule)}
+h3{font:600 1rem var(--sans);margin:1.2rem 0 .2rem}
+p{max-width:65ch}
+.meta,.small{color:var(--muted);font-size:.92rem}
+.venue{display:inline-block;font:600 .74rem var(--sans);letter-spacing:.04em;color:var(--accent);border:1px solid currentColor;border-radius:3px;padding:.05rem .45rem}
+.links{display:flex;flex-wrap:wrap;gap:.3rem 1rem;font:500 .88rem var(--sans)}
+.head{display:grid;gap:.6rem;margin-bottom:.4rem}
+.pub{display:grid;gap:.3rem;padding-block:1.1rem;border-bottom:1px solid var(--rule)}
+.pub .t{font-weight:600;line-height:1.35}
+.pub .t a{color:var(--ink);text-decoration:none}
+.pub .t a:hover{color:var(--accent)}
+pre{background:var(--card);border:1px solid var(--rule);padding:1rem;overflow-x:auto;font:.78rem/1.5 var(--mono)}
+nav{display:flex;gap:1rem;font:500 .88rem var(--sans);margin-bottom:2rem}
+nav a{text-decoration:none}
+details{margin-top:2.4rem;padding-top:.8rem;border-top:1px solid var(--rule)}
+summary{cursor:pointer;font:600 .78rem var(--sans);text-transform:uppercase;letter-spacing:.09em;color:var(--muted)}
+summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.lede{font-size:1.08rem;color:var(--muted)}
+table{border-collapse:collapse;width:100%;font:.9rem/1.45 var(--sans)}
+.tw{overflow-x:auto}
+td,th{text-align:left;vertical-align:top;padding:.45rem .6rem .45rem 0;border-bottom:1px solid var(--rule)}
+th{font-weight:600;color:var(--muted)}
+td:first-child{font-variant-numeric:tabular-nums;white-space:nowrap;font-weight:600}
+ul.rel{padding-left:1.1rem}
+</style>
+</head>
+<body>
+<main>
+<nav><a href="https://zhixudu.github.io/">&larr; Zhixu Du</a><a href="https://zhixudu.github.io/projects/token-cost/">Token cost (MoA) paper page</a></nav>
+<div class="head"><div><span class="venue">Under review</span></div>
+<h1>Token-Level Model Selection Among LLMs as an MDP</h1>
+<p class="lede">How can choosing among several LLMs at each decoding step be formulated as an MDP?</p></div>
+<h2>Answer</h2>
+<p>Treat each language model as a policy and the choice of model as an action taken by a controller at every decoding step. Du et al. (2026) formulate token-level mixture-of-agents this way. The state is the prompt plus the tokens generated so far, the next token is appended deterministically, generation ends at an end-of-sequence token or a length cap, and the terminal reward is a task checker&#x27;s verdict. A controller selects agent k with probability sigma(k | s) and then samples from that agent, so the effective next-token policy is the mixture of agent policies weighted by sigma (Eq. 3).</p><p>The controller&#x27;s objective is to maximise the expected checker reward subject to an expected compute budget on the summed per-token FLOPs of the selected agents (Eq. 4). The formulation is idealised: each agent&#x27;s prefix cache is assumed available and switching agents costs nothing. An agent choice matters twice, through its immediate cost and through the continuation, because different agents can emit different tokens and lead to different states.</p><p>When the target response is fixed in advance, the problem simplifies. The admissible agents at each position are those whose greedy prediction equals the reference token, and all of them emit the same token and reach the same next state, so the remaining cost is shared. The Bellman recursion becomes J_t = d_F(t) + J_{t+1} with J_{T+1} = 0 (Eq. 7), and the minimum-cost controller picks the cheapest matching agent at each position (Eq. 8). The total equals the sum of per-token sufficient compute (Eq. 9). Algorithm 1 computes this with teacher forcing and marks positions with no matching agent as unresolved.</p><p>The simplification does not hold off the reference. The paper&#x27;s handover experiments show that letting a 0.5B model generate on its own moves accuracy relative to Qwen2.5-72B from -0.09 points at one token to -9.44 points at 64 tokens. Related formulations include COLLAB, which selects off-the-shelf policies in a shared decoding MDP by long-term utility, and CITER, which casts small/large token routing as an MDP.</p>
+<h2>Key numbers</h2>
+<div class="tw"><table><thead><tr><th>Value</th><th>Meaning</th><th>Where in the paper</th></tr></thead><tbody><tr><td>J_{T+1} = 0</td><td>terminal condition of the Bellman recursion J_t = d_F(t) + J_{t+1}</td><td>Section 3, Eq. 7</td></tr><tr><td>−0.09 ± 0.19</td><td>accuracy difference (pp) when 0.5B generates one token before 72B resumes</td><td>Table A8</td></tr><tr><td>−9.44 ± 0.50</td><td>accuracy difference (pp) at 64 small-model tokens</td><td>Table A8</td></tr></tbody></table></div>
+<h2>Setup</h2>
+<p>Measurement panels of fifteen models: Qwen2.5 (0.5B to 72B, seven sizes), OLMo-2 (1B, 7B, 13B, 32B) and DeepSeek-R1-Distill-Qwen (1.5B, 7B, 14B, 32B), with Falcon3 (1B, 3B, 7B, 10B) for cross-family replication. References are checker-verified responses from Qwen2.5-72B-Instruct (four samples per prompt at temperature 0.7, top-p 0.95, earliest passing sample kept), with Llama-3.3-70B-Instruct as a second generator. Core datasets are GSM8K, MATH-500 and HumanEval (1,800 Qwen-written references: 1,281, 375 and 144), within twelve benchmarks totaling 50,019 prompts. Teacher-forced scoring runs in vLLM 0.14.1 with BF16 on eight 80 GB A100-SXM4 GPUs; uncertainty uses 2,000 item-bootstrap resamples.</p>
+<p class="small">The greedy-optimality result assumes a fixed verified reference, greedy deterministic agents, additive per-token costs, available caches and free switching.</p>
+<h2>Source</h2>
+<p><a href="https://zhixudu.github.io/projects/token-cost/">What Does a Token Cost? A Mixture-of-Agents Measurement of Sufficient Per-Token Compute</a>. Zhixu Du, Weijia Han, Hai (Helen) Li, Yiran Chen. Under review, 2026. Evidence: Section 3, Eqs. 3-9, Algorithm 1, Figure 2.</p>
+<div class="links"><a href="https://arxiv.org/abs/2610.02491">arXiv</a> <a href="https://arxiv.org/pdf/2610.02491">PDF</a> <a href="https://zhixudu.github.io/projects/token-cost/citation.bib">BibTeX</a></div>
+<h2>Related questions</h2><ul class="rel"><li><a href="https://zhixudu.github.io/projects/token-cost/per-token-compute-requirements-llm/">Measuring How Much Compute Each LLM Token Needs</a></li><li><a href="https://zhixudu.github.io/projects/token-cost/reference-reproduction-cost-upper-bound-correct-answer/">Reference Reproduction Cost as an Upper Bound on Correct Answers</a></li><li><a href="https://zhixudu.github.io/projects/token-cost/small-model-handoff-teacher-forcing-vs-free-generation/">Teacher-Forced Agreement vs Free-Running Small-Model Generation</a></li></ul>
+<details><summary>Citation (BibTeX)</summary>
+<pre>@misc{du2026token,
+  title         = {What Does a Token Cost? A Mixture-of-Agents Measurement of Sufficient Per-Token Compute},
+  author        = {Du, Zhixu and Han, Weijia and Li, Hai and Chen, Yiran},
+  year          = {2026},
+  eprint        = {2610.02491},
+  archivePrefix = {arXiv},
+  url           = {https://arxiv.org/abs/2610.02491}
+}
+</pre>
+</details>
+
+</main>
+</body>
+</html>

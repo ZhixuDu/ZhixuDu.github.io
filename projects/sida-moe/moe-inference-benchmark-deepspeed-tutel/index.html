@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MoE Inference Throughput Benchmarks Against DeepSpeed and Tutel | SiDA-MoE</title>
+<meta name="description" content="On Switch Transformers, SiDA-MoE reports 2.60x and 3.93x the baseline-average throughput for 128 and 256 experts on SST2, but 1.01-1.04x with 8 experts.">
+<link rel="canonical" href="https://zhixudu.github.io/projects/sida-moe/moe-inference-benchmark-deepspeed-tutel/">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "MoE Inference Throughput Benchmarks Against DeepSpeed and Tutel", "description": "On Switch Transformers, SiDA-MoE reports 2.60x and 3.93x the baseline-average throughput for 128 and 256 experts on SST2, but 1.01-1.04x with 8 experts.", "about": "Throughput and latency versus DeepSpeed and Tutel", "url": "https://zhixudu.github.io/projects/sida-moe/moe-inference-benchmark-deepspeed-tutel/", "dateModified": "2026-11-10", "author": [{"@type": "Person", "name": "Zhixu Du"}, {"@type": "Person", "name": "Shiyu Li"}, {"@type": "Person", "name": "Yuhao Wu"}, {"@type": "Person", "name": "Xiangyu Jiang"}, {"@type": "Person", "name": "Jingwei Sun"}, {"@type": "Person", "name": "Qilin Zheng"}, {"@type": "Person", "name": "Yongkai Wu"}, {"@type": "Person", "name": "Ang Li"}, {"@type": "Person", "name": "Hai (Helen) Li"}, {"@type": "Person", "name": "Yiran Chen"}], "isBasedOn": {"@type": "ScholarlyArticle", "name": "SiDA: Sparsity-Inspired Data-Aware Serving for Efficient and Scalable Large Mixture-of-Experts Models", "url": "https://arxiv.org/abs/2310.18859"}}</script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=IBM+Plex+Sans:wght@500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+/* Layout: single reading column, publication list as ruled entries, venue as a small stamp. */
+:root{
+  --paper:#f7f6f2;--ink:#1b1d22;--muted:#5d6068;--rule:#dcdad3;--card:#ffffff;--accent:#1f4e79;
+  --serif:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#15171b;--ink:#e7e6e1;--muted:#a3a5ab;--rule:#2b2e34;--card:#1c1f24;--accent:#8fb8e0;color-scheme:dark}}
+:root[data-theme="dark"]{--paper:#15171b;--ink:#e7e6e1;--muted:#a3a5ab;--rule:#2b2e34;--card:#1c1f24;--accent:#8fb8e0;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.65 var(--serif)}
+main{max-width:44rem;margin:0 auto;padding-inline:1.25rem;padding-block:2.5rem 4rem}
+a{color:var(--accent);text-underline-offset:2px}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1{font-size:1.85rem;line-height:1.25;margin:0;text-wrap:balance;font-weight:600}
+h2{font:600 .78rem var(--sans);text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin:2.4rem 0 .8rem;padding-top:.8rem;border-top:1px solid var(--rule)}
+h3{font:600 1rem var(--sans);margin:1.2rem 0 .2rem}
+p{max-width:65ch}
+.meta,.small{color:var(--muted);font-size:.92rem}
+.venue{display:inline-block;font:600 .74rem var(--sans);letter-spacing:.04em;color:var(--accent);border:1px solid currentColor;border-radius:3px;padding:.05rem .45rem}
+.links{display:flex;flex-wrap:wrap;gap:.3rem 1rem;font:500 .88rem var(--sans)}
+.head{display:grid;gap:.6rem;margin-bottom:.4rem}
+.pub{display:grid;gap:.3rem;padding-block:1.1rem;border-bottom:1px solid var(--rule)}
+.pub .t{font-weight:600;line-height:1.35}
+.pub .t a{color:var(--ink);text-decoration:none}
+.pub .t a:hover{color:var(--accent)}
+pre{background:var(--card);border:1px solid var(--rule);padding:1rem;overflow-x:auto;font:.78rem/1.5 var(--mono)}
+nav{display:flex;gap:1rem;font:500 .88rem var(--sans);margin-bottom:2rem}
+nav a{text-decoration:none}
+details{margin-top:2.4rem;padding-top:.8rem;border-top:1px solid var(--rule)}
+summary{cursor:pointer;font:600 .78rem var(--sans);text-transform:uppercase;letter-spacing:.09em;color:var(--muted)}
+summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.lede{font-size:1.08rem;color:var(--muted)}
+table{border-collapse:collapse;width:100%;font:.9rem/1.45 var(--sans)}
+.tw{overflow-x:auto}
+td,th{text-align:left;vertical-align:top;padding:.45rem .6rem .45rem 0;border-bottom:1px solid var(--rule)}
+th{font-weight:600;color:var(--muted)}
+td:first-child{font-variant-numeric:tabular-nums;white-space:nowrap;font-weight:600}
+ul.rel{padding-left:1.1rem}
+</style>
+</head>
+<body>
+<main>
+<nav><a href="https://zhixudu.github.io/">&larr; Zhixu Du</a><a href="https://zhixudu.github.io/projects/sida-moe/">SiDA-MoE paper page</a></nav>
+<div class="head"><div><span class="venue">MLSys 2024</span></div>
+<h1>MoE Inference Throughput Benchmarks Against DeepSpeed and Tutel</h1>
+<p class="lede">Benchmarks of MoE inference frameworks such as DeepSpeed-MoE and Tutel on Switch Transformers</p></div>
+<h2>Answer</h2>
+<p>Benchmarks in SiDA-MoE (Du et al., MLSys 2024) compare Standard inference, DeepSpeed inference and Tutel against SiDA-MoE, a data-aware expert offloading system, on Switch Transformers with 8 to 256 experts per layer. Reported throughput is relative to the average of the three baselines. The gain depends strongly on both the number of experts and input length.</p><p>On SST2 (short sentences), SiDA-MoE&#x27;s throughput is 1.04x, 1.43x, 2.60x and 3.93x the baseline average for Switch-base-8, -64, -128 and -256. On MRPC (mid-length) the figures are 1.01x, 1.54x, 2.52x and 3.83x. On MultiRC (long paragraphs of 200 to 500 tokens) they fall to 1.02x, 1.09x, 1.26x and 1.57x. For latency, on Switch-base-128 and Switch-base-256 SiDA-MoE reduces inference latency to 25% on SST2 and MRPC and to 60% on MultiRC; Figure 10 notes latency reduced down to 28% on Switch-base-256 and that improvements are larger for shorter sentences.</p><p>Two mechanisms explain the pattern. First, MoE overhead (expert selection, invocation and communication) grows with expert count, from 0.05% of inference time for Switch-base-8 to 72.3% for Switch-base-256 at batch size 1, so there is little to remove in small models. SiDA-MoE moves expert selection into a parallel thread and invokes only predicted experts. Second, longer inputs activate more experts, which reduces both the memory saving and the speedup.</p><p>The paper describes DeepSpeed and Tutel as focused on device-to-device communication and parallelism, while SiDA-MoE uses the input to decide which experts to keep on the GPU. The accuracy cost of predicted routing should be weighed alongside these speedups: fidelity is 97.49% to 98.95% on Switch-base-8 and 92.56% to 93.02% on Switch-base-128.</p>
+<h2>Key numbers</h2>
+<div class="tw"><table><thead><tr><th>Value</th><th>Meaning</th><th>Where in the paper</th></tr></thead><tbody><tr><td>3.93×</td><td>Throughput vs baseline average, Switch-base-256 on SST2</td><td>Figure 9</td></tr><tr><td>2.60×</td><td>Throughput vs baseline average, Switch-base-128 on SST2</td><td>Figure 9</td></tr><tr><td>1.57×</td><td>Throughput vs baseline average, Switch-base-256 on MultiRC</td><td>Figure 9</td></tr><tr><td>1.04×</td><td>Throughput vs baseline average, Switch-base-8 on SST2</td><td>Figure 9</td></tr></tbody></table></div>
+<h2>Setup</h2>
+<p>Switch Transformer base models with 8, 64, 128 and 256 experts per MoE layer (Switch-base-8/64/128/256), implemented on the Hugging Face transformers Switch Transformer code. Tasks: SST2 and MRPC from GLUE (short and mid-length sentences), MultiRC from SuperGLUE (long inputs), and C4 for perplexity. Hardware: one A100 80GB GPU with 64 Intel Xeon Platinum 8358 CPUs @ 2.60GHz. Baselines: Standard inference, DeepSpeed inference, and Tutel. Latency and memory are measured at batch size 1.</p>
+<p class="small">Comparisons were run on one A100 80GB GPU with Switch Transformer base models and GLUE/SuperGLUE inputs, with latency measured at batch size 1.</p>
+<h2>Source</h2>
+<p><a href="https://zhixudu.github.io/projects/sida-moe/">SiDA: Sparsity-Inspired Data-Aware Serving for Efficient and Scalable Large Mixture-of-Experts Models</a>. Zhixu Du, Shiyu Li, Yuhao Wu, Xiangyu Jiang, Jingwei Sun, Qilin Zheng, Yongkai Wu, Ang Li, Hai (Helen) Li, Yiran Chen. Proceedings of the Seventh Conference on Machine Learning and Systems (MLSys 2024), 2024. Evidence: Section 4.2; Figure 9; Figure 10.</p>
+<div class="links"><a href="https://arxiv.org/abs/2310.18859">arXiv</a> <a href="https://arxiv.org/pdf/2310.18859">PDF</a> <a href="https://openreview.net/forum?id=q26ydTFF5j">OpenReview</a> <a href="https://github.com/timlee0212/SiDA-MoE">Code</a> <a href="https://zhixudu.github.io/projects/sida-moe/citation.bib">BibTeX</a></div>
+<h2>Related questions</h2><ul class="rel"><li><a href="https://zhixudu.github.io/projects/sida-moe/moe-inference-routing-overhead-profiling/">How Much MoE Inference Time Goes to Routing and Dispatch</a></li><li><a href="https://zhixudu.github.io/projects/sida-moe/sequence-length-effect-on-expert-offloading/">Longer Prompts Reduce the Benefit of MoE Expert Offloading</a></li><li><a href="https://zhixudu.github.io/projects/sida-moe/moe-throughput-vs-gpu-memory-budget/">MoE Inference Throughput Under a Fixed GPU Memory Budget</a></li></ul>
+<details><summary>Citation (BibTeX)</summary>
+<pre>@inproceedings{du2024sida,
+  title     = {SiDA: Sparsity-Inspired Data-Aware Serving for Efficient and Scalable Large Mixture-of-Experts Models},
+  author    = {Du, Zhixu and Li, Shiyu and Wu, Yuhao and Jiang, Xiangyu and Sun, Jingwei and Zheng, Qilin and Wu, Yongkai and Li, Ang and Li, Hai and Chen, Yiran},
+  booktitle = {Proceedings of the Seventh Conference on Machine Learning and Systems (MLSys 2024)},
+  year      = {2024},
+  url       = {https://arxiv.org/abs/2310.18859}
+}
+</pre>
+</details>
+
+</main>
+</body>
+</html>

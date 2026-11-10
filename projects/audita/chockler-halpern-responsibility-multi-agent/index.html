@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Computing Chockler-Halpern Responsibility for AI Agents | AUDITA</title>
+<meta name="description" content="Build a causal model over the agents&#x27; messages, find minimal causes under modified Halpern-Pearl, grade each by 1/(|X*|+|W*|), and take each agent&#x27;s max.">
+<link rel="canonical" href="https://zhixudu.github.io/projects/audita/chockler-halpern-responsibility-multi-agent/">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "Computing Chockler-Halpern Responsibility for AI Agents", "description": "Build a causal model over the agents' messages, find minimal causes under modified Halpern-Pearl, grade each by 1/(|X*|+|W*|), and take each agent's max.", "about": "Halpern-Pearl actual causality for agent messages", "url": "https://zhixudu.github.io/projects/audita/chockler-halpern-responsibility-multi-agent/", "dateModified": "2026-11-10", "author": [{"@type": "Person", "name": "Zhixu Du"}, {"@type": "Person", "name": "Yiran Chen"}], "isBasedOn": {"@type": "ScholarlyArticle", "name": "AUDITA: certified auditing and causal attribution of adverse outcomes in autonomous multi-agent systems", "url": "https://arxiv.org/abs/2608.22160"}}</script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=IBM+Plex+Sans:wght@500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+/* Layout: single reading column, publication list as ruled entries, venue as a small stamp. */
+:root{
+  --paper:#f7f6f2;--ink:#1b1d22;--muted:#5d6068;--rule:#dcdad3;--card:#ffffff;--accent:#1f4e79;
+  --serif:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#15171b;--ink:#e7e6e1;--muted:#a3a5ab;--rule:#2b2e34;--card:#1c1f24;--accent:#8fb8e0;color-scheme:dark}}
+:root[data-theme="dark"]{--paper:#15171b;--ink:#e7e6e1;--muted:#a3a5ab;--rule:#2b2e34;--card:#1c1f24;--accent:#8fb8e0;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.65 var(--serif)}
+main{max-width:44rem;margin:0 auto;padding-inline:1.25rem;padding-block:2.5rem 4rem}
+a{color:var(--accent);text-underline-offset:2px}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1{font-size:1.85rem;line-height:1.25;margin:0;text-wrap:balance;font-weight:600}
+h2{font:600 .78rem var(--sans);text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin:2.4rem 0 .8rem;padding-top:.8rem;border-top:1px solid var(--rule)}
+h3{font:600 1rem var(--sans);margin:1.2rem 0 .2rem}
+p{max-width:65ch}
+.meta,.small{color:var(--muted);font-size:.92rem}
+.venue{display:inline-block;font:600 .74rem var(--sans);letter-spacing:.04em;color:var(--accent);border:1px solid currentColor;border-radius:3px;padding:.05rem .45rem}
+.links{display:flex;flex-wrap:wrap;gap:.3rem 1rem;font:500 .88rem var(--sans)}
+.head{display:grid;gap:.6rem;margin-bottom:.4rem}
+.pub{display:grid;gap:.3rem;padding-block:1.1rem;border-bottom:1px solid var(--rule)}
+.pub .t{font-weight:600;line-height:1.35}
+.pub .t a{color:var(--ink);text-decoration:none}
+.pub .t a:hover{color:var(--accent)}
+pre{background:var(--card);border:1px solid var(--rule);padding:1rem;overflow-x:auto;font:.78rem/1.5 var(--mono)}
+nav{display:flex;gap:1rem;font:500 .88rem var(--sans);margin-bottom:2rem}
+nav a{text-decoration:none}
+details{margin-top:2.4rem;padding-top:.8rem;border-top:1px solid var(--rule)}
+summary{cursor:pointer;font:600 .78rem var(--sans);text-transform:uppercase;letter-spacing:.09em;color:var(--muted)}
+summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.lede{font-size:1.08rem;color:var(--muted)}
+table{border-collapse:collapse;width:100%;font:.9rem/1.45 var(--sans)}
+.tw{overflow-x:auto}
+td,th{text-align:left;vertical-align:top;padding:.45rem .6rem .45rem 0;border-bottom:1px solid var(--rule)}
+th{font-weight:600;color:var(--muted)}
+td:first-child{font-variant-numeric:tabular-nums;white-space:nowrap;font-weight:600}
+ul.rel{padding-left:1.1rem}
+</style>
+</head>
+<body>
+<main>
+<nav><a href="https://zhixudu.github.io/">&larr; Zhixu Du</a><a href="https://zhixudu.github.io/projects/audita/">AUDITA paper page</a></nav>
+<div class="head"><div><span class="venue">arXiv preprint 2026</span></div>
+<h1>Computing Chockler-Halpern Responsibility for AI Agents</h1>
+<p class="lede">How do I compute Chockler-Halpern degree of responsibility for agents in a multi-agent system?</p></div>
+<h2>Answer</h2>
+<p>Build a structural causal model whose variables are the agents&#x27; messages, find the minimal causes of the outcome under the modified Halpern-Pearl definition, and grade each minimal cause-witness pair by rho = 1/(|X*|+|W*|). An agent&#x27;s degree of responsibility is the maximum grade over minimal causes that contain a message it authored, and 0 with an exoneration note if there is none. This is the construction in AUDITA (Du and Chen, 2026), Eqs. (1) and (2).</p><p>The model has one binary presence variable per certified message, one absence variable per active duty whose required message was never issued (for example a missing halt), and the outcome Y. Mechanisms come from the citation structure, since each message cites the messages it acts on, and from recorded actuation semantics. X* is an actual cause if some witness set W*, frozen at its actual values, exists such that setting X* to counterfactual values falsifies Y, with X* minimal. The grade recovers the classical degree 1/(k+1) through the size correspondence between the modified and original definitions.</p><p>The degrees are not normalised and need not sum to one. Redundancy, two independently sufficient commands, yields 1/2 each. Preemption is handled by a production gate that retires commands whose effect never reached the outcome before grading, omissions are graded through their absence variables, and faithful relays are flagged as conduits. Because Eq. (2) takes a maximum, an agent cannot change its grade by splitting its output into more messages (Proposition S3).</p><p>On monotone models, which include every scenario family in the paper, witness sets become vacuous, the grade reduces to 1/|X*|, and minimal causes are the minimal transversals of the satisfied prime implicants (Lemma S3, Proposition S1). Deciding actual causation is NP-hard in general; the paper computes exhaustively over incident slices, with exact recovery (error 0.000) on all CulpaBench structures and query time growing from 0.02 s at 2 candidates to 62.1 s at 14.</p>
+<h2>Key numbers</h2>
+<div class="tw"><table><thead><tr><th>Value</th><th>Meaning</th><th>Where in the paper</th></tr></thead><tbody><tr><td>1/2</td><td>grade of each of two independently sufficient commands (redundancy)</td><td>Methods, Eq. (1); Extended Data Table 1</td></tr><tr><td>0.000</td><td>responsibility error on every CulpaBench structure, mean over 300 draws</td><td>Table 2</td></tr><tr><td>62.1</td><td>seconds per exact query at 14 interacting candidates</td><td>Extended Data Table 2</td></tr></tbody></table></div>
+<h2>Setup</h2>
+<p>Python implementation with structural-model construction and exhaustive gate-and-grade search over incident slices, replay by seeded re-execution, Ed25519 signing and Merkle epoch commitments. Evaluated on CulpaBench (over 1,000 incidents in a deterministic multi-robot facility simulator, 300 draws per structure) and on live GSM8K multi-agent pipelines with Qwen2.5-72B-Instruct, against Who&amp;When LLM judges, CAR / CausalFlow single-site scoring, Shapley-value attribution and an anomaly detector.</p>
+<p class="small">The NESS and witness-vacuity results hold on monotone incident models, which cover all scenario families evaluated in the paper.</p>
+<h2>Source</h2>
+<p><a href="https://zhixudu.github.io/projects/audita/">AUDITA: certified auditing and causal attribution of adverse outcomes in autonomous multi-agent systems</a>. Zhixu Du, Yiran Chen. arXiv preprint 2026, 2026. Evidence: Methods: Certified causal attribution; Eqs. (1)-(2); Supplementary Note S1.</p>
+<div class="links"><a href="https://arxiv.org/abs/2608.22160">arXiv</a> <a href="https://arxiv.org/pdf/2608.22160">PDF</a> <a href="https://zhixudu.github.io/projects/audita/citation.bib">BibTeX</a></div>
+<h2>Related questions</h2><ul class="rel"><li><a href="https://zhixudu.github.io/projects/audita/preemption-production-gate-counterfactual-attribution/">Handling Preemption in Counterfactual Blame Attribution</a></li><li><a href="https://zhixudu.github.io/projects/audita/negligence-duty-breach-ness-test-ai-agents/">Formalizing Duty, Breach and NESS Causation for AI Agents</a></li><li><a href="https://zhixudu.github.io/projects/audita/cost-exact-halpern-pearl-actual-causation/">Computational Cost of Exact Halpern-Pearl Actual Causation</a></li></ul>
+<details><summary>Citation (BibTeX)</summary>
+<pre>@misc{du2026audita,
+  title         = {AUDITA: certified auditing and causal attribution of adverse outcomes in autonomous multi-agent systems},
+  author        = {Du, Zhixu and Chen, Yiran},
+  year          = {2026},
+  eprint        = {2608.22160},
+  archivePrefix = {arXiv},
+  url           = {https://arxiv.org/abs/2608.22160}
+}
+</pre>
+</details>
+
+</main>
+</body>
+</html>

@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Running MoE Models Larger Than GPU Memory via Expert Offloading | SiDA-MoE</title>
+<meta name="description" content="Keep only the experts an input will use on the GPU and hold the rest in CPU main memory; SiDA-MoE reports up to 80% GPU memory saving this way.">
+<link rel="canonical" href="https://zhixudu.github.io/projects/sida-moe/run-moe-model-larger-than-gpu-memory/">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "Running MoE Models Larger Than GPU Memory via Expert Offloading", "description": "Keep only the experts an input will use on the GPU and hold the rest in CPU main memory; SiDA-MoE reports up to 80% GPU memory saving this way.", "about": "Serving large MoE models under limited GPU memory", "url": "https://zhixudu.github.io/projects/sida-moe/run-moe-model-larger-than-gpu-memory/", "dateModified": "2026-11-10", "author": [{"@type": "Person", "name": "Zhixu Du"}, {"@type": "Person", "name": "Shiyu Li"}, {"@type": "Person", "name": "Yuhao Wu"}, {"@type": "Person", "name": "Xiangyu Jiang"}, {"@type": "Person", "name": "Jingwei Sun"}, {"@type": "Person", "name": "Qilin Zheng"}, {"@type": "Person", "name": "Yongkai Wu"}, {"@type": "Person", "name": "Ang Li"}, {"@type": "Person", "name": "Hai (Helen) Li"}, {"@type": "Person", "name": "Yiran Chen"}], "isBasedOn": {"@type": "ScholarlyArticle", "name": "SiDA: Sparsity-Inspired Data-Aware Serving for Efficient and Scalable Large Mixture-of-Experts Models", "url": "https://arxiv.org/abs/2310.18859"}}</script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=IBM+Plex+Sans:wght@500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+/* Layout: single reading column, publication list as ruled entries, venue as a small stamp. */
+:root{
+  --paper:#f7f6f2;--ink:#1b1d22;--muted:#5d6068;--rule:#dcdad3;--card:#ffffff;--accent:#1f4e79;
+  --serif:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#15171b;--ink:#e7e6e1;--muted:#a3a5ab;--rule:#2b2e34;--card:#1c1f24;--accent:#8fb8e0;color-scheme:dark}}
+:root[data-theme="dark"]{--paper:#15171b;--ink:#e7e6e1;--muted:#a3a5ab;--rule:#2b2e34;--card:#1c1f24;--accent:#8fb8e0;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.65 var(--serif)}
+main{max-width:44rem;margin:0 auto;padding-inline:1.25rem;padding-block:2.5rem 4rem}
+a{color:var(--accent);text-underline-offset:2px}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1{font-size:1.85rem;line-height:1.25;margin:0;text-wrap:balance;font-weight:600}
+h2{font:600 .78rem var(--sans);text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin:2.4rem 0 .8rem;padding-top:.8rem;border-top:1px solid var(--rule)}
+h3{font:600 1rem var(--sans);margin:1.2rem 0 .2rem}
+p{max-width:65ch}
+.meta,.small{color:var(--muted);font-size:.92rem}
+.venue{display:inline-block;font:600 .74rem var(--sans);letter-spacing:.04em;color:var(--accent);border:1px solid currentColor;border-radius:3px;padding:.05rem .45rem}
+.links{display:flex;flex-wrap:wrap;gap:.3rem 1rem;font:500 .88rem var(--sans)}
+.head{display:grid;gap:.6rem;margin-bottom:.4rem}
+.pub{display:grid;gap:.3rem;padding-block:1.1rem;border-bottom:1px solid var(--rule)}
+.pub .t{font-weight:600;line-height:1.35}
+.pub .t a{color:var(--ink);text-decoration:none}
+.pub .t a:hover{color:var(--accent)}
+pre{background:var(--card);border:1px solid var(--rule);padding:1rem;overflow-x:auto;font:.78rem/1.5 var(--mono)}
+nav{display:flex;gap:1rem;font:500 .88rem var(--sans);margin-bottom:2rem}
+nav a{text-decoration:none}
+details{margin-top:2.4rem;padding-top:.8rem;border-top:1px solid var(--rule)}
+summary{cursor:pointer;font:600 .78rem var(--sans);text-transform:uppercase;letter-spacing:.09em;color:var(--muted)}
+summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.lede{font-size:1.08rem;color:var(--muted)}
+table{border-collapse:collapse;width:100%;font:.9rem/1.45 var(--sans)}
+.tw{overflow-x:auto}
+td,th{text-align:left;vertical-align:top;padding:.45rem .6rem .45rem 0;border-bottom:1px solid var(--rule)}
+th{font-weight:600;color:var(--muted)}
+td:first-child{font-variant-numeric:tabular-nums;white-space:nowrap;font-weight:600}
+ul.rel{padding-left:1.1rem}
+</style>
+</head>
+<body>
+<main>
+<nav><a href="https://zhixudu.github.io/">&larr; Zhixu Du</a><a href="https://zhixudu.github.io/projects/sida-moe/">SiDA-MoE paper page</a></nav>
+<div class="head"><div><span class="venue">MLSys 2024</span></div>
+<h1>Running MoE Models Larger Than GPU Memory via Expert Offloading</h1>
+<p class="lede">How can I run a Mixture-of-Experts model that does not fit in a single GPU&#x27;s memory?</p></div>
+<h2>Answer</h2>
+<p>You can serve a Mixture-of-Experts (MoE) model that exceeds GPU memory by keeping only the experts a given input will actually use on the GPU and holding all other experts in host main memory. In SiDA-MoE (Du et al., MLSys 2024), a predictor decides before inference which experts each token needs, so those experts are loaded ahead of time instead of after each router call. On Switch Transformers this gives up to 80% GPU memory saving.</p><p>The approach works because MoE layers hold most of the parameters while most experts sit idle for any one input. MoE layers hold 78.03% of the parameters of Switch-base-8 and 99.07% of Switch-base-256, whose full size is 54.62 GB. The paper notes that high-end GPUs remain around 80GB and commodity GPUs are limited to 48GB or less, while modern server CPUs support terabytes of main memory. Simply offloading experts and fetching them after each router decision breaks the forward pipeline and adds large CPU-GPU transfer overhead, which is why prediction ahead of time matters.</p><p>SiDA-MoE runs two threads. A hash-building thread applies an offline-trained predictor (an LSTM with sparse attention) to the next batch and builds a table of the expert and scaling factor for every token at every MoE layer. An inference thread, working on the previous batch, loads the predicted experts to the GPU and moves inactive ones to RAM, evicting experts first-in-first-out when the memory budget is full. The routers themselves are offloaded and do not run in the forward pass.</p><p>Reported results: over 80% GPU memory reduction on short SST2 sentences; savings of 6.28GB and 19.84GB for Switch-base-128 and Switch-base-256 on MRPC; and savings of 4.52GB and 9.92GB on MultiRC inputs of 200 to 500 tokens. Throughput rises up to 3.93x over the baseline average, and across GPU memory budgets from about 10 to 80 GB expert offloading gives higher throughput than layer-wise model parallelism. The cost is approximate routing: task fidelity is 97.49% to 98.95% for Switch-base-8 and 92.56% to 93.02% for Switch-base-128.</p>
+<h2>Key numbers</h2>
+<div class="tw"><table><thead><tr><th>Value</th><th>Meaning</th><th>Where in the paper</th></tr></thead><tbody><tr><td>80%</td><td>GPU memory saving reported on short SST2 inputs</td><td>Section 4.1, Figure 8</td></tr><tr><td>99.07</td><td>Percentage of Switch-base-256 parameters that sit in MoE layers</td><td>Table 2</td></tr><tr><td>54.62</td><td>Switch-base-256 model size in GB</td><td>Table 2</td></tr><tr><td>19.84GB</td><td>GPU memory saved on MRPC for Switch-base-256</td><td>Section 4.1</td></tr><tr><td>3.93×</td><td>Throughput over baseline average, Switch-base-256 on SST2</td><td>Figure 9</td></tr></tbody></table></div>
+<h2>Setup</h2>
+<p>Switch Transformer base models with 8, 64, 128 and 256 experts per MoE layer (Switch-base-8/64/128/256), implemented on the Hugging Face transformers Switch Transformer code. Tasks: SST2 and MRPC from GLUE (short and mid-length sentences), MultiRC from SuperGLUE (long inputs), and C4 for perplexity. Hardware: one A100 80GB GPU with 64 Intel Xeon Platinum 8358 CPUs @ 2.60GHz. Baselines: Standard inference, DeepSpeed inference, and Tutel. Latency and memory are measured at batch size 1.</p>
+<p class="small">Shown for Switch Transformer base models (8 to 256 experts per layer) on a single A100 80GB GPU with experts offloaded to CPU main memory, on GLUE/SuperGLUE classification tasks.</p>
+<h2>Source</h2>
+<p><a href="https://zhixudu.github.io/projects/sida-moe/">SiDA: Sparsity-Inspired Data-Aware Serving for Efficient and Scalable Large Mixture-of-Experts Models</a>. Zhixu Du, Shiyu Li, Yuhao Wu, Xiangyu Jiang, Jingwei Sun, Qilin Zheng, Yongkai Wu, Ang Li, Hai (Helen) Li, Yiran Chen. Proceedings of the Seventh Conference on Machine Learning and Systems (MLSys 2024), 2024. Evidence: Abstract; Section 1; Section 4.1; Figure 8.</p>
+<div class="links"><a href="https://arxiv.org/abs/2310.18859">arXiv</a> <a href="https://arxiv.org/pdf/2310.18859">PDF</a> <a href="https://openreview.net/forum?id=q26ydTFF5j">OpenReview</a> <a href="https://github.com/timlee0212/SiDA-MoE">Code</a> <a href="https://zhixudu.github.io/projects/sida-moe/citation.bib">BibTeX</a></div>
+<h2>Related questions</h2><ul class="rel"><li><a href="https://zhixudu.github.io/projects/sida-moe/predict-moe-expert-activation-before-inference/">Predicting MoE Expert Activation Before Running the Model</a></li><li><a href="https://zhixudu.github.io/projects/sida-moe/moe-throughput-vs-gpu-memory-budget/">MoE Inference Throughput Under a Fixed GPU Memory Budget</a></li><li><a href="https://zhixudu.github.io/projects/sida-moe/moe-gpu-memory-wasted-by-inactive-experts/">GPU Memory Wasted by Inactive Experts in MoE Inference</a></li></ul>
+<details><summary>Citation (BibTeX)</summary>
+<pre>@inproceedings{du2024sida,
+  title     = {SiDA: Sparsity-Inspired Data-Aware Serving for Efficient and Scalable Large Mixture-of-Experts Models},
+  author    = {Du, Zhixu and Li, Shiyu and Wu, Yuhao and Jiang, Xiangyu and Sun, Jingwei and Zheng, Qilin and Wu, Yongkai and Li, Ang and Li, Hai and Chen, Yiran},
+  booktitle = {Proceedings of the Seventh Conference on Machine Learning and Systems (MLSys 2024)},
+  year      = {2024},
+  url       = {https://arxiv.org/abs/2310.18859}
+}
+</pre>
+</details>
+
+</main>
+</body>
+</html>

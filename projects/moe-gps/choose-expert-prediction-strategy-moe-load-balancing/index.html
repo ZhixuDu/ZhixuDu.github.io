@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Choosing an Expert Prediction Strategy for MoE Load Balancing | MoE-GPS</title>
+<meta name="description" content="Predict only the expert load distribution unless communication is the bottleneck and routing is highly skewed; then per-token prediction can pay off.">
+<link rel="canonical" href="https://zhixudu.github.io/projects/moe-gps/choose-expert-prediction-strategy-moe-load-balancing/">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "Choosing an Expert Prediction Strategy for MoE Load Balancing", "description": "Predict only the expert load distribution unless communication is the bottleneck and routing is highly skewed; then per-token prediction can pay off.", "about": "Choosing expert load predictors for MoE inference", "url": "https://zhixudu.github.io/projects/moe-gps/choose-expert-prediction-strategy-moe-load-balancing/", "dateModified": "2026-11-10", "author": [{"@type": "Person", "name": "Haiyue Ma"}, {"@type": "Person", "name": "Zhixu Du"}, {"@type": "Person", "name": "Yiran Chen"}], "isBasedOn": {"@type": "ScholarlyArticle", "name": "MoE-GPS: Guidlines for Prediction Strategy for Dynamic Expert Duplication in MoE Load Balancing", "url": "https://arxiv.org/abs/2506.07366"}}</script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=IBM+Plex+Sans:wght@500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+/* Layout: single reading column, publication list as ruled entries, venue as a small stamp. */
+:root{
+  --paper:#f7f6f2;--ink:#1b1d22;--muted:#5d6068;--rule:#dcdad3;--card:#ffffff;--accent:#1f4e79;
+  --serif:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#15171b;--ink:#e7e6e1;--muted:#a3a5ab;--rule:#2b2e34;--card:#1c1f24;--accent:#8fb8e0;color-scheme:dark}}
+:root[data-theme="dark"]{--paper:#15171b;--ink:#e7e6e1;--muted:#a3a5ab;--rule:#2b2e34;--card:#1c1f24;--accent:#8fb8e0;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.65 var(--serif)}
+main{max-width:44rem;margin:0 auto;padding-inline:1.25rem;padding-block:2.5rem 4rem}
+a{color:var(--accent);text-underline-offset:2px}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1{font-size:1.85rem;line-height:1.25;margin:0;text-wrap:balance;font-weight:600}
+h2{font:600 .78rem var(--sans);text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin:2.4rem 0 .8rem;padding-top:.8rem;border-top:1px solid var(--rule)}
+h3{font:600 1rem var(--sans);margin:1.2rem 0 .2rem}
+p{max-width:65ch}
+.meta,.small{color:var(--muted);font-size:.92rem}
+.venue{display:inline-block;font:600 .74rem var(--sans);letter-spacing:.04em;color:var(--accent);border:1px solid currentColor;border-radius:3px;padding:.05rem .45rem}
+.links{display:flex;flex-wrap:wrap;gap:.3rem 1rem;font:500 .88rem var(--sans)}
+.head{display:grid;gap:.6rem;margin-bottom:.4rem}
+.pub{display:grid;gap:.3rem;padding-block:1.1rem;border-bottom:1px solid var(--rule)}
+.pub .t{font-weight:600;line-height:1.35}
+.pub .t a{color:var(--ink);text-decoration:none}
+.pub .t a:hover{color:var(--accent)}
+pre{background:var(--card);border:1px solid var(--rule);padding:1rem;overflow-x:auto;font:.78rem/1.5 var(--mono)}
+nav{display:flex;gap:1rem;font:500 .88rem var(--sans);margin-bottom:2rem}
+nav a{text-decoration:none}
+details{margin-top:2.4rem;padding-top:.8rem;border-top:1px solid var(--rule)}
+summary{cursor:pointer;font:600 .78rem var(--sans);text-transform:uppercase;letter-spacing:.09em;color:var(--muted)}
+summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.lede{font-size:1.08rem;color:var(--muted)}
+table{border-collapse:collapse;width:100%;font:.9rem/1.45 var(--sans)}
+.tw{overflow-x:auto}
+td,th{text-align:left;vertical-align:top;padding:.45rem .6rem .45rem 0;border-bottom:1px solid var(--rule)}
+th{font-weight:600;color:var(--muted)}
+td:first-child{font-variant-numeric:tabular-nums;white-space:nowrap;font-weight:600}
+ul.rel{padding-left:1.1rem}
+</style>
+</head>
+<body>
+<main>
+<nav><a href="https://zhixudu.github.io/">&larr; Zhixu Du</a><a href="https://zhixudu.github.io/projects/moe-gps/">MoE-GPS paper page</a></nav>
+<div class="head"><div><span class="venue">NeurIPS 2025 Workshop (ML for Systems)</span></div>
+<h1>Choosing an Expert Prediction Strategy for MoE Load Balancing</h1>
+<p class="lede">How should I decide whether to predict per-token expert routing or just the expert load distribution for MoE serving?</p></div>
+<h2>Answer</h2>
+<p>Decide based on two questions: is inference bottlenecked by communication, and is the expert load highly imbalanced? Predicting only the load distribution across experts is preferred when skewness is low or communication is not a bottleneck. Predicting the expert of every token becomes worthwhile as skewness rises and when interconnect bandwidth is low, as with PCIe. This decision flow comes from MoE-GPS: Guidelines for Prediction Strategy for Dynamic Expert Duplication in MoE Load Balancing (Ma et al., 2025), which presents MoE-GPS, a framework that simulates end-to-end latency for a given model and hardware setup and picks the strategy with the lowest runtime.</p><p>Both strategies serve dynamic expert duplication, where popular experts are copied to more GPUs to absorb excess tokens; the copies must be placed before routing, so the load has to be predicted. Distribution-Only Prediction estimates the share of tokens each expert will receive per layer. It is computed offline, adds no runtime overhead and balances FFN compute, but tokens are still scattered randomly, so communication is unchanged. Token-to-Expert Prediction predicts each token&#x27;s expert, so tokens can be sent directly to the right GPU and skip the scatter step, saving both FFN compute and communication. Its cost is a predictor whose overhead rises with accuracy, which gives a U-shaped latency curve with the optimum at intermediate accuracy.</p><p>In simulations of Mixtral 8x7B prefill on four A100 GPUs at batch size 1 and sequence length 512, Distribution-Only Prediction performs better in most cases. At skewness 1.4, a typical value close to the MMLU dataset, it achieves a 23% speedup over the best Token-to-Expert configuration. Token-to-Expert Prediction gains ground at higher skewness, where accurate predictions are cheaper, and under PCIe 4.0, where saved communication outweighs predictor cost.</p><p>MoE-GPS is built on the LLMCompass architectural simulator, extended with expert-parallel communication, Mixtral-style layers and predictors of tunable accuracy and overhead.</p>
+<h2>Key numbers</h2>
+<div class="tw"><table><thead><tr><th>Value</th><th>Meaning</th><th>Where in the paper</th></tr></thead><tbody><tr><td>23%</td><td>speedup of Distribution-Only over the best Token-to-Expert configuration at skewness 1.4</td><td>Section 4, Figure 6</td></tr><tr><td>1.4</td><td>skewness of the typical case, close to MMLU</td><td>Section 4</td></tr><tr><td>512</td><td>sequence length in the simulated workload (batch size 1)</td><td>Section 4</td></tr></tbody></table></div>
+<h2>Setup</h2>
+<p>Mixtral 8x7B (with Llama-MoE and Switch Transformer in the appendix) on MMLU, Alpaca Eval and SST2, batch size 1 and sequence length 512. Latency is simulated for a single Transformer layer of prefill (time to first token) with an extended LLMCompass simulator, on four A100 GPUs fully connected by NVLink 3.0 (2 TB/s) or PCIe 4.0 (32GB/s), using tensor parallelism for attention and expert parallelism for FFN layers. Predictor overhead is measured on A100 GPUs. Compared: no prediction, Distribution-Only Prediction, and Token-to-Expert Prediction at a range of accuracies.</p>
+<p class="small">Shown in simulation of single-layer prefill for Mixtral 8x7B on four fully connected A100 GPUs with batch size 1 and sequence length 512, over NVLink and PCIe interconnects.</p>
+<h2>Source</h2>
+<p><a href="https://zhixudu.github.io/projects/moe-gps/">MoE-GPS: Guidlines for Prediction Strategy for Dynamic Expert Duplication in MoE Load Balancing</a>. Haiyue Ma, Zhixu Du, Yiran Chen. NeurIPS 2025 Workshop on ML for Systems, 2025. Evidence: Figure 1, Section 1, Section 4.</p>
+<div class="links"><a href="https://arxiv.org/abs/2506.07366">arXiv</a> <a href="https://arxiv.org/pdf/2506.07366">PDF</a> <a href="https://openreview.net/forum?id=VCh5vBSxxb">OpenReview</a> <a href="https://zhixudu.github.io/projects/moe-gps/citation.bib">BibTeX</a></div>
+<h2>Related questions</h2><ul class="rel"><li><a href="https://zhixudu.github.io/projects/moe-gps/distribution-only-expert-load-prediction-moe/">Balancing MoE Experts With Predicted Expert Frequencies Only</a></li><li><a href="https://zhixudu.github.io/projects/moe-gps/expert-routing-predictor-accuracy-vs-overhead/">Expert Routing Predictor Accuracy vs Overhead in MoE Inference</a></li><li><a href="https://zhixudu.github.io/projects/moe-gps/pcie-vs-nvlink-moe-expert-load-balancing/">PCIe vs NVLink: Picking an MoE Load Balancing Strategy</a></li></ul>
+<details><summary>Citation (BibTeX)</summary>
+<pre>@inproceedings{ma2025moe,
+  title     = {MoE-GPS: Guidlines for Prediction Strategy for Dynamic Expert Duplication in MoE Load Balancing},
+  author    = {Ma, Haiyue and Du, Zhixu and Chen, Yiran},
+  booktitle = {NeurIPS 2025 Workshop on ML for Systems},
+  year      = {2025},
+  url       = {https://arxiv.org/abs/2506.07366}
+}
+</pre>
+</details>
+
+</main>
+</body>
+</html>

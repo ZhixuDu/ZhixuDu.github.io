@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Which Mamba Parameters to Route: Transition vs B and C | Swimba</title>
+<meta name="description" content="Share the transition A across experts and make only the injection and readout streams (B, C, X) expert-specific, keeping one state trajectory.">
+<link rel="canonical" href="https://zhixudu.github.io/projects/swimba/which-mamba-parameters-to-route-with-experts/">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "Which Mamba Parameters to Route: Transition vs B and C", "description": "Share the transition A across experts and make only the injection and readout streams (B, C, X) expert-specific, keeping one state trajectory.", "about": "Shared transition, expert-specific B, C and X", "url": "https://zhixudu.github.io/projects/swimba/which-mamba-parameters-to-route-with-experts/", "dateModified": "2026-11-10", "author": [{"@type": "Person", "name": "Zhixu Du"}, {"@type": "Person", "name": "Krishna Teja Chitty-Venkata"}, {"@type": "Person", "name": "Murali Emani"}, {"@type": "Person", "name": "Venkatram Vishwanath"}, {"@type": "Person", "name": "Hai (Helen) Li"}, {"@type": "Person", "name": "Yiran Chen"}], "isBasedOn": {"@type": "ScholarlyArticle", "name": "Swimba: Switch Mamba Model Scales State Space Models", "url": "https://arxiv.org/abs/2603.06938"}}</script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=IBM+Plex+Sans:wght@500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+/* Layout: single reading column, publication list as ruled entries, venue as a small stamp. */
+:root{
+  --paper:#f7f6f2;--ink:#1b1d22;--muted:#5d6068;--rule:#dcdad3;--card:#ffffff;--accent:#1f4e79;
+  --serif:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#15171b;--ink:#e7e6e1;--muted:#a3a5ab;--rule:#2b2e34;--card:#1c1f24;--accent:#8fb8e0;color-scheme:dark}}
+:root[data-theme="dark"]{--paper:#15171b;--ink:#e7e6e1;--muted:#a3a5ab;--rule:#2b2e34;--card:#1c1f24;--accent:#8fb8e0;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.65 var(--serif)}
+main{max-width:44rem;margin:0 auto;padding-inline:1.25rem;padding-block:2.5rem 4rem}
+a{color:var(--accent);text-underline-offset:2px}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1{font-size:1.85rem;line-height:1.25;margin:0;text-wrap:balance;font-weight:600}
+h2{font:600 .78rem var(--sans);text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin:2.4rem 0 .8rem;padding-top:.8rem;border-top:1px solid var(--rule)}
+h3{font:600 1rem var(--sans);margin:1.2rem 0 .2rem}
+p{max-width:65ch}
+.meta,.small{color:var(--muted);font-size:.92rem}
+.venue{display:inline-block;font:600 .74rem var(--sans);letter-spacing:.04em;color:var(--accent);border:1px solid currentColor;border-radius:3px;padding:.05rem .45rem}
+.links{display:flex;flex-wrap:wrap;gap:.3rem 1rem;font:500 .88rem var(--sans)}
+.head{display:grid;gap:.6rem;margin-bottom:.4rem}
+.pub{display:grid;gap:.3rem;padding-block:1.1rem;border-bottom:1px solid var(--rule)}
+.pub .t{font-weight:600;line-height:1.35}
+.pub .t a{color:var(--ink);text-decoration:none}
+.pub .t a:hover{color:var(--accent)}
+pre{background:var(--card);border:1px solid var(--rule);padding:1rem;overflow-x:auto;font:.78rem/1.5 var(--mono)}
+nav{display:flex;gap:1rem;font:500 .88rem var(--sans);margin-bottom:2rem}
+nav a{text-decoration:none}
+details{margin-top:2.4rem;padding-top:.8rem;border-top:1px solid var(--rule)}
+summary{cursor:pointer;font:600 .78rem var(--sans);text-transform:uppercase;letter-spacing:.09em;color:var(--muted)}
+summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.lede{font-size:1.08rem;color:var(--muted)}
+table{border-collapse:collapse;width:100%;font:.9rem/1.45 var(--sans)}
+.tw{overflow-x:auto}
+td,th{text-align:left;vertical-align:top;padding:.45rem .6rem .45rem 0;border-bottom:1px solid var(--rule)}
+th{font-weight:600;color:var(--muted)}
+td:first-child{font-variant-numeric:tabular-nums;white-space:nowrap;font-weight:600}
+ul.rel{padding-left:1.1rem}
+</style>
+</head>
+<body>
+<main>
+<nav><a href="https://zhixudu.github.io/">&larr; Zhixu Du</a><a href="https://zhixudu.github.io/projects/swimba/">Swimba paper page</a></nav>
+<div class="head"><div><span class="venue">NeurIPS 2026</span></div>
+<h1>Which Mamba Parameters to Route: Transition vs B and C</h1>
+<p class="lede">Which Mamba parameters should be routed by experts: the transition matrix or the input and output projections?</p></div>
+<h2>Answer</h2>
+<p>Swimba (Du et al., 2026) routes the input and output side and keeps the transition shared. Each expert produces its own injection and readout streams B^(e)_t, C^(e)_t and the injected input X^(e)_t from the same token features using expert-specific linear projections, matching how Mamba-2 generates token-dependent parameters. The transition is shared across experts and time, A^(e)_t ≡ A, so expert diversity enters through B, C and X rather than through separate transitions.</p><p>Sharing A is what makes the design work. With a shared transition, mixing the expert streams gives h_t = A h_{t-1} + Σ π_{t,e} B^(e)_t X^(e)_t and Y_t = (Σ π_{t,e} C^(e)_t)^T h_t, which Theorem 1 shows is exactly one selective SSM with state size N. That keeps a single coherent state trajectory, evaluated once by Mamba-2&#x27;s SSD kernel, which itself relies on a scalar-times-identity transition. Theorem 3 then gives a stability bound that only requires ||A|| ≤ ρ &lt; 1 and bounded mixed streams, because routing can affect the state only through the injected term. Theorem 4, on when mixed and separated expert recurrences agree, also assumes a shared A.</p><p>In the implementation, the Mamba-2 in-projection that produces the SSM inputs is replaced by multiple expert in-projections plus a router; the paper&#x27;s Figure 3 shows each expert with its own convolution and activations producing its streams before the routing-weighted sum. The related-work section contrasts this with block-mixing hybrids where the SSM stays dense, and states that Swimba routes experts to generate the B_t and C_t that govern the state update.</p><p>With 4 experts and top-1 routing, Swimba-14B built on Nemotron-H-8B reaches an average accuracy of 70.81 versus 69.47 at FLOPs per token within 0.2%.</p>
+<h2>Key numbers</h2>
+<div class="tw"><table><thead><tr><th>Value</th><th>Meaning</th><th>Where in the paper</th></tr></thead><tbody><tr><td>A^(e)_t ≡ A</td><td>Transition shared across all experts and time steps</td><td>Eq. (7)</td></tr><tr><td>70.81</td><td>Average accuracy of Swimba-14B (Nemotron-H-8B: 69.47)</td><td>Table 1</td></tr></tbody></table></div>
+<h2>Setup</h2>
+<p>Backbone: Nemotron-H-8B, a 52-layer hybrid decoder with four self-attention layers and alternating Mamba-2 and FFN layers. Swimba-14B replaces every Mamba-2 layer with a Swimba layer of 4 experts, top-1 routing per token. New expert and router parameters are trained with supervised fine-tuning on the SFT portion of the Llama-Nemotron Post-Training Dataset while the copied backbone is frozen. Accuracy is measured with LM-Evaluation-Harness on ARC-Challenge, ARC-Easy, BoolQ, HellaSwag, MMLU, OpenBookQA, PIQA, RTE and WinoGrande; FLOPs with the PyTorch profiler; throughput and latency with vLLM (Transformers backend) on a single 40GB A100 GPU. Baseline: Nemotron-H-8B.</p>
+<p class="small">The paper does not train a variant with expert-specific transitions, so the choice is justified by the theorems rather than by an ablation.</p>
+<h2>Source</h2>
+<p><a href="https://zhixudu.github.io/projects/swimba/">Swimba: Switch Mamba Model Scales State Space Models</a>. Zhixu Du, Krishna Teja Chitty-Venkata, Murali Emani, Venkatram Vishwanath, Hai (Helen) Li, Yiran Chen. Advances in Neural Information Processing Systems 39 (NeurIPS 2026), 2026. Evidence: Section 3.2 Eq. (7)-(9), Section 6.</p>
+<div class="links"><a href="https://arxiv.org/abs/2603.06938">arXiv</a> <a href="https://arxiv.org/pdf/2603.06938">PDF</a> <a href="https://zhixudu.github.io/projects/swimba/citation.bib">BibTeX</a></div>
+<h2>Related questions</h2><ul class="rel"><li><a href="https://zhixudu.github.io/projects/swimba/moe-routing-mamba2-ssd-kernel-compatibility/">MoE Routing Compatible With the Mamba-2 SSD Kernel</a></li><li><a href="https://zhixudu.github.io/projects/swimba/bibo-stability-ssm-expert-routing/">BIBO Stability of State Space Models With Expert Routing</a></li><li><a href="https://zhixudu.github.io/projects/swimba/moe-mamba-blackmamba-jamba-routing-mamba/">Where MoE-Mamba, BlackMamba, Jamba and Routing Mamba Put Experts</a></li></ul>
+<details><summary>Citation (BibTeX)</summary>
+<pre>@inproceedings{du2026swimba,
+  title     = {Swimba: Switch Mamba Model Scales State Space Models},
+  author    = {Du, Zhixu and Chitty-Venkata, Krishna Teja and Emani, Murali and Vishwanath, Venkatram and Li, Hai and Chen, Yiran},
+  booktitle = {Advances in Neural Information Processing Systems 39 (NeurIPS 2026)},
+  year      = {2026},
+  url       = {https://arxiv.org/abs/2603.06938}
+}
+</pre>
+</details>
+
+</main>
+</body>
+</html>

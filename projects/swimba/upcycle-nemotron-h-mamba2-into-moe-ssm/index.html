@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Upcycling a Pretrained Hybrid Mamba Model Into an MoE SSM | Swimba</title>
+<meta name="description" content="Swimba starts from Nemotron-H-8B, swaps each Mamba-2 layer for an MoE layer, freezes the copied backbone and trains only experts and routers with SFT.">
+<link rel="canonical" href="https://zhixudu.github.io/projects/swimba/upcycle-nemotron-h-mamba2-into-moe-ssm/">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "Upcycling a Pretrained Hybrid Mamba Model Into an MoE SSM", "description": "Swimba starts from Nemotron-H-8B, swaps each Mamba-2 layer for an MoE layer, freezes the copied backbone and trains only experts and routers with SFT.", "about": "Upcycling a pretrained hybrid Mamba-Transformer", "url": "https://zhixudu.github.io/projects/swimba/upcycle-nemotron-h-mamba2-into-moe-ssm/", "dateModified": "2026-11-10", "author": [{"@type": "Person", "name": "Zhixu Du"}, {"@type": "Person", "name": "Krishna Teja Chitty-Venkata"}, {"@type": "Person", "name": "Murali Emani"}, {"@type": "Person", "name": "Venkatram Vishwanath"}, {"@type": "Person", "name": "Hai (Helen) Li"}, {"@type": "Person", "name": "Yiran Chen"}], "isBasedOn": {"@type": "ScholarlyArticle", "name": "Swimba: Switch Mamba Model Scales State Space Models", "url": "https://arxiv.org/abs/2603.06938"}}</script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=IBM+Plex+Sans:wght@500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+/* Layout: single reading column, publication list as ruled entries, venue as a small stamp. */
+:root{
+  --paper:#f7f6f2;--ink:#1b1d22;--muted:#5d6068;--rule:#dcdad3;--card:#ffffff;--accent:#1f4e79;
+  --serif:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#15171b;--ink:#e7e6e1;--muted:#a3a5ab;--rule:#2b2e34;--card:#1c1f24;--accent:#8fb8e0;color-scheme:dark}}
+:root[data-theme="dark"]{--paper:#15171b;--ink:#e7e6e1;--muted:#a3a5ab;--rule:#2b2e34;--card:#1c1f24;--accent:#8fb8e0;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.65 var(--serif)}
+main{max-width:44rem;margin:0 auto;padding-inline:1.25rem;padding-block:2.5rem 4rem}
+a{color:var(--accent);text-underline-offset:2px}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1{font-size:1.85rem;line-height:1.25;margin:0;text-wrap:balance;font-weight:600}
+h2{font:600 .78rem var(--sans);text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin:2.4rem 0 .8rem;padding-top:.8rem;border-top:1px solid var(--rule)}
+h3{font:600 1rem var(--sans);margin:1.2rem 0 .2rem}
+p{max-width:65ch}
+.meta,.small{color:var(--muted);font-size:.92rem}
+.venue{display:inline-block;font:600 .74rem var(--sans);letter-spacing:.04em;color:var(--accent);border:1px solid currentColor;border-radius:3px;padding:.05rem .45rem}
+.links{display:flex;flex-wrap:wrap;gap:.3rem 1rem;font:500 .88rem var(--sans)}
+.head{display:grid;gap:.6rem;margin-bottom:.4rem}
+.pub{display:grid;gap:.3rem;padding-block:1.1rem;border-bottom:1px solid var(--rule)}
+.pub .t{font-weight:600;line-height:1.35}
+.pub .t a{color:var(--ink);text-decoration:none}
+.pub .t a:hover{color:var(--accent)}
+pre{background:var(--card);border:1px solid var(--rule);padding:1rem;overflow-x:auto;font:.78rem/1.5 var(--mono)}
+nav{display:flex;gap:1rem;font:500 .88rem var(--sans);margin-bottom:2rem}
+nav a{text-decoration:none}
+details{margin-top:2.4rem;padding-top:.8rem;border-top:1px solid var(--rule)}
+summary{cursor:pointer;font:600 .78rem var(--sans);text-transform:uppercase;letter-spacing:.09em;color:var(--muted)}
+summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.lede{font-size:1.08rem;color:var(--muted)}
+table{border-collapse:collapse;width:100%;font:.9rem/1.45 var(--sans)}
+.tw{overflow-x:auto}
+td,th{text-align:left;vertical-align:top;padding:.45rem .6rem .45rem 0;border-bottom:1px solid var(--rule)}
+th{font-weight:600;color:var(--muted)}
+td:first-child{font-variant-numeric:tabular-nums;white-space:nowrap;font-weight:600}
+ul.rel{padding-left:1.1rem}
+</style>
+</head>
+<body>
+<main>
+<nav><a href="https://zhixudu.github.io/">&larr; Zhixu Du</a><a href="https://zhixudu.github.io/projects/swimba/">Swimba paper page</a></nav>
+<div class="head"><div><span class="venue">NeurIPS 2026</span></div>
+<h1>Upcycling a Pretrained Hybrid Mamba Model Into an MoE SSM</h1>
+<p class="lede">Can you upcycle a pretrained Nemotron-H or Mamba-2 model into a mixture-of-experts SSM by training only experts and routers?</p></div>
+<h2>Answer</h2>
+<p>Yes. Swimba (Du et al., 2026) is built this way. The authors start from the Nemotron-H-8B checkpoint, copy all shared parameters, replace every Mamba-2 layer with a Swimba layer, and introduce new expert and router parameters for each Swimba layer. During continued training only the newly introduced expert and router parameters are updated; the copied backbone parameters stay fixed.</p><p>The architecture keeps Nemotron-H-8B&#x27;s 52-layer hybrid layout. Four self-attention layers are dispersed through depth and the remaining layers alternate between sequence-mixing layers and FFN layers; the first layer is a sequence mixer, the last is an FFN, and self-attention layers precede the FFNs they pair with. The only architectural change is the sequence mixer: each Mamba-2 layer becomes a Swimba layer, in which the Mamba-2 in-projection is replaced by several expert in-projections and a token-level router, and the SSM computation itself is unchanged.</p><p>Training is supervised fine-tuning on the Llama-Nemotron Post-Training Dataset, which spans math, code, science, instruction following, chat and safety. Only the SFT portion is used, with teacher-forced training on the dataset&#x27;s standard schema of role-based input chat messages and a target output string. The paper does not report learning rate, number of steps or tokens trained.</p><p>The resulting Swimba-14B has 4 experts per Swimba layer with one active per token. Against Nemotron-H-8B it raises average accuracy across nine benchmarks from 69.47 to 70.81, with MMLU going from 71.7 to 75.0, at FLOPs per token within 0.2%. In vLLM decoding it is slightly slower, with as low as a 10% slowdown.</p>
+<h2>Key numbers</h2>
+<div class="tw"><table><thead><tr><th>Value</th><th>Meaning</th><th>Where in the paper</th></tr></thead><tbody><tr><td>52</td><td>Layers in the Nemotron-H-8B hybrid layout kept by Swimba</td><td>Section 4.2</td></tr><tr><td>4</td><td>Experts per Swimba layer, top-1 routing</td><td>Section 5, Setup</td></tr><tr><td>71.7 → 75.0</td><td>MMLU accuracy, Nemotron-H-8B vs Swimba-14B</td><td>Table 1</td></tr></tbody></table></div>
+<h2>Setup</h2>
+<p>Backbone: Nemotron-H-8B, a 52-layer hybrid decoder with four self-attention layers and alternating Mamba-2 and FFN layers. Swimba-14B replaces every Mamba-2 layer with a Swimba layer of 4 experts, top-1 routing per token. New expert and router parameters are trained with supervised fine-tuning on the SFT portion of the Llama-Nemotron Post-Training Dataset while the copied backbone is frozen. Accuracy is measured with LM-Evaluation-Harness on ARC-Challenge, ARC-Easy, BoolQ, HellaSwag, MMLU, OpenBookQA, PIQA, RTE and WinoGrande; FLOPs with the PyTorch profiler; throughput and latency with vLLM (Transformers backend) on a single 40GB A100 GPU. Baseline: Nemotron-H-8B.</p>
+<p class="small">The recipe was shown for one backbone (Nemotron-H-8B) with a frozen copied backbone and SFT-only data; training hyperparameters and data volume are not reported.</p>
+<h2>Source</h2>
+<p><a href="https://zhixudu.github.io/projects/swimba/">Swimba: Switch Mamba Model Scales State Space Models</a>. Zhixu Du, Krishna Teja Chitty-Venkata, Murali Emani, Venkatram Vishwanath, Hai (Helen) Li, Yiran Chen. Advances in Neural Information Processing Systems 39 (NeurIPS 2026), 2026. Evidence: Section 4.2, Section 4.3.</p>
+<div class="links"><a href="https://arxiv.org/abs/2603.06938">arXiv</a> <a href="https://arxiv.org/pdf/2603.06938">PDF</a> <a href="https://zhixudu.github.io/projects/swimba/citation.bib">BibTeX</a></div>
+<h2>Related questions</h2><ul class="rel"><li><a href="https://zhixudu.github.io/projects/swimba/moe-mamba-benchmark-accuracy-matched-flops/">Benchmark Gains From MoE Mamba Layers at Matched FLOPs</a></li><li><a href="https://zhixudu.github.io/projects/swimba/mixture-of-experts-in-mamba-token-mixer/">Mixture-of-Experts Inside the Mamba Token Mixer</a></li><li><a href="https://zhixudu.github.io/projects/swimba/vllm-throughput-latency-moe-mamba-model/">vLLM Throughput and Latency Overhead of an MoE Mamba Model</a></li></ul>
+<details><summary>Citation (BibTeX)</summary>
+<pre>@inproceedings{du2026swimba,
+  title     = {Swimba: Switch Mamba Model Scales State Space Models},
+  author    = {Du, Zhixu and Chitty-Venkata, Krishna Teja and Emani, Murali and Vishwanath, Venkatram and Li, Hai and Chen, Yiran},
+  booktitle = {Advances in Neural Information Processing Systems 39 (NeurIPS 2026)},
+  year      = {2026},
+  url       = {https://arxiv.org/abs/2603.06938}
+}
+</pre>
+</details>
+
+</main>
+</body>
+</html>

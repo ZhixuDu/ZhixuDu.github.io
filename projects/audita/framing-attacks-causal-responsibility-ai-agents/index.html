@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Framing Attacks on Causal Responsibility of AI Agents | AUDITA</title>
+<meta name="description" content="Insiders can make a compliant agent a true but-for cause, but under Audita&#x27;s verdict that agent is never found culpable and the framers are graded.">
+<link rel="canonical" href="https://zhixudu.github.io/projects/audita/framing-attacks-causal-responsibility-ai-agents/">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "Framing Attacks on Causal Responsibility of AI Agents", "description": "Insiders can make a compliant agent a true but-for cause, but under Audita's verdict that agent is never found culpable and the framers are graded.", "about": "Framing attacks by insiders with valid keys", "url": "https://zhixudu.github.io/projects/audita/framing-attacks-causal-responsibility-ai-agents/", "dateModified": "2026-11-10", "author": [{"@type": "Person", "name": "Zhixu Du"}, {"@type": "Person", "name": "Yiran Chen"}], "isBasedOn": {"@type": "ScholarlyArticle", "name": "AUDITA: certified auditing and causal attribution of adverse outcomes in autonomous multi-agent systems", "url": "https://arxiv.org/abs/2608.22160"}}</script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=IBM+Plex+Sans:wght@500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+/* Layout: single reading column, publication list as ruled entries, venue as a small stamp. */
+:root{
+  --paper:#f7f6f2;--ink:#1b1d22;--muted:#5d6068;--rule:#dcdad3;--card:#ffffff;--accent:#1f4e79;
+  --serif:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#15171b;--ink:#e7e6e1;--muted:#a3a5ab;--rule:#2b2e34;--card:#1c1f24;--accent:#8fb8e0;color-scheme:dark}}
+:root[data-theme="dark"]{--paper:#15171b;--ink:#e7e6e1;--muted:#a3a5ab;--rule:#2b2e34;--card:#1c1f24;--accent:#8fb8e0;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.65 var(--serif)}
+main{max-width:44rem;margin:0 auto;padding-inline:1.25rem;padding-block:2.5rem 4rem}
+a{color:var(--accent);text-underline-offset:2px}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1{font-size:1.85rem;line-height:1.25;margin:0;text-wrap:balance;font-weight:600}
+h2{font:600 .78rem var(--sans);text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin:2.4rem 0 .8rem;padding-top:.8rem;border-top:1px solid var(--rule)}
+h3{font:600 1rem var(--sans);margin:1.2rem 0 .2rem}
+p{max-width:65ch}
+.meta,.small{color:var(--muted);font-size:.92rem}
+.venue{display:inline-block;font:600 .74rem var(--sans);letter-spacing:.04em;color:var(--accent);border:1px solid currentColor;border-radius:3px;padding:.05rem .45rem}
+.links{display:flex;flex-wrap:wrap;gap:.3rem 1rem;font:500 .88rem var(--sans)}
+.head{display:grid;gap:.6rem;margin-bottom:.4rem}
+.pub{display:grid;gap:.3rem;padding-block:1.1rem;border-bottom:1px solid var(--rule)}
+.pub .t{font-weight:600;line-height:1.35}
+.pub .t a{color:var(--ink);text-decoration:none}
+.pub .t a:hover{color:var(--accent)}
+pre{background:var(--card);border:1px solid var(--rule);padding:1rem;overflow-x:auto;font:.78rem/1.5 var(--mono)}
+nav{display:flex;gap:1rem;font:500 .88rem var(--sans);margin-bottom:2rem}
+nav a{text-decoration:none}
+details{margin-top:2.4rem;padding-top:.8rem;border-top:1px solid var(--rule)}
+summary{cursor:pointer;font:600 .78rem var(--sans);text-transform:uppercase;letter-spacing:.09em;color:var(--muted)}
+summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.lede{font-size:1.08rem;color:var(--muted)}
+table{border-collapse:collapse;width:100%;font:.9rem/1.45 var(--sans)}
+.tw{overflow-x:auto}
+td,th{text-align:left;vertical-align:top;padding:.45rem .6rem .45rem 0;border-bottom:1px solid var(--rule)}
+th{font-weight:600;color:var(--muted)}
+td:first-child{font-variant-numeric:tabular-nums;white-space:nowrap;font-weight:600}
+ul.rel{padding-left:1.1rem}
+</style>
+</head>
+<body>
+<main>
+<nav><a href="https://zhixudu.github.io/">&larr; Zhixu Du</a><a href="https://zhixudu.github.io/projects/audita/">AUDITA paper page</a></nav>
+<div class="head"><div><span class="venue">arXiv preprint 2026</span></div>
+<h1>Framing Attacks on Causal Responsibility of AI Agents</h1>
+<p class="lede">Can a malicious agent frame an innocent agent in a causal responsibility analysis?</p></div>
+<h2>Answer</h2>
+<p>Partly. AUDITA (Du and Chen, 2026) shows that an insider holding a valid key can make an innocent, duty-compliant agent a genuine but-for cause of harm, and that no record machinery can prevent this. What the insider cannot do is make that agent culpable, because a culpability finding requires a breach witnessed by the accused agent&#x27;s own certified conduct (Theorem 1).</p><p>The paper builds two attacks. In conditioning (Attack I), the insider runs the policy &quot;if the victim&#x27;s message is present, emit the harmful command, citing it; otherwise behave&quot;. Every item certifies, the production gate passes through the attacker&#x27;s own citation, and honest replay certifies the victim&#x27;s responsibility at 1. In inevitability rigging (Attack II), the attacker deviates in a way that lies on no path from the victim to the outcome and is not itself a cause: it rigs an otherwise inevitable harm so that only the victim could have prevented it. This shows that localising every framing on a causal path is impossible.</p><p>Three results bound the damage. Theorem 1 holds for content-determined duties, which are predicates over an agent&#x27;s own certified messages and inputs, with no ground-truth label or third-party assertion. Theorem 2 shows that if a coalition&#x27;s deviations from a declared reference standard raise a compliant agent&#x27;s involvement, those deviations are an actual cause of the victim&#x27;s pivotality, and a minimal blame-shift certificate, checkable by replay, grades each framer with the same responsibility calculus. Theorem 5 extends this to every order, and Proposition 4 shows that padding with inert decoys changes no grade.</p><p>Across 600 incidents, both attacks raised victim involvement to 1.0 with every message verifying, while victim culpability stayed 0.000 and a certificate named the attacker in every incident. A level-2 scapegoat attack convicted a benign deviator in 0 of 330 draws and named the true attacker in all 330. The authors note these attacks are theorem-derived, testing the implementation rather than covering all adversaries.</p>
+<h2>Key numbers</h2>
+<div class="tw"><table><thead><tr><th>Value</th><th>Meaning</th><th>Where in the paper</th></tr></thead><tbody><tr><td>600</td><td>incidents under the two conduct-level framing attacks</td><td>Results, Conduct attacks</td></tr><tr><td>1.0</td><td>victim causal involvement reached by the attacks</td><td>Results, Conduct attacks</td></tr><tr><td>0.000</td><td>victim culpability in all 600 incidents</td><td>Results, Conduct attacks</td></tr><tr><td>0 of 330</td><td>draws in which the level-2 scapegoat convicted the benign deviator</td><td>Results, Conduct attacks</td></tr></tbody></table></div>
+<h2>Setup</h2>
+<p>Attack constructions from Supplementary Notes S3-S4 instantiated in the deterministic CulpaBench facility simulator (conditioning on a victim&#x27;s compliant message, inevitability rigging via a redundant route, and a level-2 scapegoat in which a supervisor&#x27;s duty-compliant halt is pivotal). Counterfactuals are decided by exact world re-execution with citation-chain propagation; certificates are computed by the same responsibility calculus over deviation selectors relative to a declared reference standard.</p>
+<p class="small">Guarantees hold under content-determined duty rosters, a replayable stack, a recorded channel and unstolen keys, with key holders allowed to be arbitrarily malicious; tested attacks are theorem-derived.</p>
+<h2>Source</h2>
+<p><a href="https://zhixudu.github.io/projects/audita/">AUDITA: certified auditing and causal attribution of adverse outcomes in autonomous multi-agent systems</a>. Zhixu Du, Yiran Chen. arXiv preprint 2026, 2026. Evidence: Methods: Guarantees; Theorems 1, 2, 5; Proposition 4; Supplementary Notes S3-S4; Results: Conduct attacks.</p>
+<div class="links"><a href="https://arxiv.org/abs/2608.22160">arXiv</a> <a href="https://arxiv.org/pdf/2608.22160">PDF</a> <a href="https://zhixudu.github.io/projects/audita/citation.bib">BibTeX</a></div>
+<h2>Related questions</h2><ul class="rel"><li><a href="https://zhixudu.github.io/projects/audita/tamper-evident-audit-log-llm-multi-agent/">Tamper-Evident Audit Logs for LLM Multi-Agent Systems</a></li><li><a href="https://zhixudu.github.io/projects/audita/limits-ground-truth-free-auditing-ai-agents/">Limits of Auditing AI Agent Failures Without Ground Truth</a></li><li><a href="https://zhixudu.github.io/projects/audita/duty-standard-changes-ai-agent-culpability/">How the Declared Duty Standard Changes AI Culpability Verdicts</a></li></ul>
+<details><summary>Citation (BibTeX)</summary>
+<pre>@misc{du2026audita,
+  title         = {AUDITA: certified auditing and causal attribution of adverse outcomes in autonomous multi-agent systems},
+  author        = {Du, Zhixu and Chen, Yiran},
+  year          = {2026},
+  eprint        = {2608.22160},
+  archivePrefix = {arXiv},
+  url           = {https://arxiv.org/abs/2608.22160}
+}
+</pre>
+</details>
+
+</main>
+</body>
+</html>

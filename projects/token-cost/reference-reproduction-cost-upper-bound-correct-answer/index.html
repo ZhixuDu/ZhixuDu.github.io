@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reference Reproduction Cost as an Upper Bound on Correct Answers | Token cost (MoA)</title>
+<meta name="description" content="Under stated assumptions, yes: the minimum cost of reproducing one checker-passing reference upper-bounds the cheapest correct response.">
+<link rel="canonical" href="https://zhixudu.github.io/projects/token-cost/reference-reproduction-cost-upper-bound-correct-answer/">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "Reference Reproduction Cost as an Upper Bound on Correct Answers", "description": "Under stated assumptions, yes: the minimum cost of reproducing one checker-passing reference upper-bounds the cheapest correct response.", "about": "Upper-bound semantics of reference reproduction cost", "url": "https://zhixudu.github.io/projects/token-cost/reference-reproduction-cost-upper-bound-correct-answer/", "dateModified": "2026-11-10", "author": [{"@type": "Person", "name": "Zhixu Du"}, {"@type": "Person", "name": "Weijia Han"}, {"@type": "Person", "name": "Hai (Helen) Li"}, {"@type": "Person", "name": "Yiran Chen"}], "isBasedOn": {"@type": "ScholarlyArticle", "name": "What Does a Token Cost? A Mixture-of-Agents Measurement of Sufficient Per-Token Compute", "url": "https://arxiv.org/abs/2610.02491"}}</script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=IBM+Plex+Sans:wght@500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+/* Layout: single reading column, publication list as ruled entries, venue as a small stamp. */
+:root{
+  --paper:#f7f6f2;--ink:#1b1d22;--muted:#5d6068;--rule:#dcdad3;--card:#ffffff;--accent:#1f4e79;
+  --serif:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#15171b;--ink:#e7e6e1;--muted:#a3a5ab;--rule:#2b2e34;--card:#1c1f24;--accent:#8fb8e0;color-scheme:dark}}
+:root[data-theme="dark"]{--paper:#15171b;--ink:#e7e6e1;--muted:#a3a5ab;--rule:#2b2e34;--card:#1c1f24;--accent:#8fb8e0;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.65 var(--serif)}
+main{max-width:44rem;margin:0 auto;padding-inline:1.25rem;padding-block:2.5rem 4rem}
+a{color:var(--accent);text-underline-offset:2px}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1{font-size:1.85rem;line-height:1.25;margin:0;text-wrap:balance;font-weight:600}
+h2{font:600 .78rem var(--sans);text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin:2.4rem 0 .8rem;padding-top:.8rem;border-top:1px solid var(--rule)}
+h3{font:600 1rem var(--sans);margin:1.2rem 0 .2rem}
+p{max-width:65ch}
+.meta,.small{color:var(--muted);font-size:.92rem}
+.venue{display:inline-block;font:600 .74rem var(--sans);letter-spacing:.04em;color:var(--accent);border:1px solid currentColor;border-radius:3px;padding:.05rem .45rem}
+.links{display:flex;flex-wrap:wrap;gap:.3rem 1rem;font:500 .88rem var(--sans)}
+.head{display:grid;gap:.6rem;margin-bottom:.4rem}
+.pub{display:grid;gap:.3rem;padding-block:1.1rem;border-bottom:1px solid var(--rule)}
+.pub .t{font-weight:600;line-height:1.35}
+.pub .t a{color:var(--ink);text-decoration:none}
+.pub .t a:hover{color:var(--accent)}
+pre{background:var(--card);border:1px solid var(--rule);padding:1rem;overflow-x:auto;font:.78rem/1.5 var(--mono)}
+nav{display:flex;gap:1rem;font:500 .88rem var(--sans);margin-bottom:2rem}
+nav a{text-decoration:none}
+details{margin-top:2.4rem;padding-top:.8rem;border-top:1px solid var(--rule)}
+summary{cursor:pointer;font:600 .78rem var(--sans);text-transform:uppercase;letter-spacing:.09em;color:var(--muted)}
+summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.lede{font-size:1.08rem;color:var(--muted)}
+table{border-collapse:collapse;width:100%;font:.9rem/1.45 var(--sans)}
+.tw{overflow-x:auto}
+td,th{text-align:left;vertical-align:top;padding:.45rem .6rem .45rem 0;border-bottom:1px solid var(--rule)}
+th{font-weight:600;color:var(--muted)}
+td:first-child{font-variant-numeric:tabular-nums;white-space:nowrap;font-weight:600}
+ul.rel{padding-left:1.1rem}
+</style>
+</head>
+<body>
+<main>
+<nav><a href="https://zhixudu.github.io/">&larr; Zhixu Du</a><a href="https://zhixudu.github.io/projects/token-cost/">Token cost (MoA) paper page</a></nav>
+<div class="head"><div><span class="venue">Under review</span></div>
+<h1>Reference Reproduction Cost as an Upper Bound on Correct Answers</h1>
+<p class="lede">Does the cost of reproducing one correct answer bound the cost of producing any correct answer?</p></div>
+<h2>Answer</h2>
+<p>Under stated assumptions, it bounds that cost from above. Du et al. (2026) prove in Appendix B.2 that the summed per-token sufficient compute along a checker-passing reference equals the minimum cost over all selectors that reproduce that reference exactly (Eq. 15). The task-correct objective allows those selectors and also any that produce a different correct response, so its optimum is at most the same sum: the cost of producing some correct answer is at most the cost of reproducing the measured one.</p><p>The assumptions are explicit. All panel models share a token alphabet, decode greedily with a fixed deterministic tie-breaking rule, and have additive, positive next-token FLOP costs; prefix caches are available; there is no switching or state-construction overhead; every reference token is resolved; and the selector may know the full reference and all panel predictions in advance. The proof is short. Choosing a cheapest matching model at position one keeps the generated prefix equal to the reference, and induction carries this forward. Conversely, any selector that reproduces the reference must choose a matching model at every position and so pays at least the per-token minimum there. If stopping is to be reproduced, the stop token must be covered too.</p><p>A separate local witness bound handles larger model classes. For a candidate class containing the tested family, the cheapest member whose deterministic prediction equals the token at that prefix costs at most the measured value whenever a tested member succeeds. This is why the measurement is described as an observed upper bound that more agents can only tighten.</p><p>The result does not give a lower bound, and another correct response may have a different cost profile. The empirical corpus also departs from the idealisation: unresolved tokens occur at rates of 0.14-8.72% across panels and references, families use different tokenizers, and the cost proxy omits map acquisition and model-state transfer.</p>
+<h2>Key numbers</h2>
+<div class="tw"><table><thead><tr><th>Value</th><th>Meaning</th><th>Where in the paper</th></tr></thead><tbody><tr><td>0.14–8.72%</td><td>range of unresolved-token rates across panels, datasets and reference generators</td><td>Table A5</td></tr><tr><td>91.86–95.24%</td><td>reference tokens reproduced by the Qwen2.5 0.5B model, so most positions use the cheapest witness</td><td>Section 4.1</td></tr></tbody></table></div>
+<h2>Setup</h2>
+<p>Measurement panels of fifteen models: Qwen2.5 (0.5B to 72B, seven sizes), OLMo-2 (1B, 7B, 13B, 32B) and DeepSeek-R1-Distill-Qwen (1.5B, 7B, 14B, 32B), with Falcon3 (1B, 3B, 7B, 10B) for cross-family replication. References are checker-verified responses from Qwen2.5-72B-Instruct (four samples per prompt at temperature 0.7, top-p 0.95, earliest passing sample kept), with Llama-3.3-70B-Instruct as a second generator. Core datasets are GSM8K, MATH-500 and HumanEval (1,800 Qwen-written references: 1,281, 375 and 144), within twelve benchmarks totaling 50,019 prompts. Teacher-forced scoring runs in vLLM 0.14.1 with BF16 on eight 80 GB A100-SXM4 GPUs; uncertainty uses 2,000 item-bootstrap resamples.</p>
+<p class="small">The bound is exact under the listed idealised assumptions; the empirical maps include unresolved tokens and family-specific tokenization.</p>
+<h2>Source</h2>
+<p><a href="https://zhixudu.github.io/projects/token-cost/">What Does a Token Cost? A Mixture-of-Agents Measurement of Sufficient Per-Token Compute</a>. Zhixu Du, Weijia Han, Hai (Helen) Li, Yiran Chen. Under review, 2026. Evidence: Appendix B.2.</p>
+<div class="links"><a href="https://arxiv.org/abs/2610.02491">arXiv</a> <a href="https://arxiv.org/pdf/2610.02491">PDF</a> <a href="https://zhixudu.github.io/projects/token-cost/citation.bib">BibTeX</a></div>
+<h2>Related questions</h2><ul class="rel"><li><a href="https://zhixudu.github.io/projects/token-cost/per-token-compute-requirements-llm/">Measuring How Much Compute Each LLM Token Needs</a></li><li><a href="https://zhixudu.github.io/projects/token-cost/token-level-model-selection-mdp-llm/">Token-Level Model Selection Among LLMs as an MDP</a></li><li><a href="https://zhixudu.github.io/projects/token-cost/unresolved-tokens-gini-per-token-compute/">Unresolved Tokens and Gini Inequality of Per-Token Compute</a></li></ul>
+<details><summary>Citation (BibTeX)</summary>
+<pre>@misc{du2026token,
+  title         = {What Does a Token Cost? A Mixture-of-Agents Measurement of Sufficient Per-Token Compute},
+  author        = {Du, Zhixu and Han, Weijia and Li, Hai and Chen, Yiran},
+  year          = {2026},
+  eprint        = {2610.02491},
+  archivePrefix = {arXiv},
+  url           = {https://arxiv.org/abs/2610.02491}
+}
+</pre>
+</details>
+
+</main>
+</body>
+</html>

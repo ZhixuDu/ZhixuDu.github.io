@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BIBO Stability of State Space Models With Expert Routing | Swimba</title>
+<meta name="description" content="With a contractive shared transition (norm of A at most rho &lt; 1) and bounded mixed streams, Swimba&#x27;s state and output stay bounded under any routing.">
+<link rel="canonical" href="https://zhixudu.github.io/projects/swimba/bibo-stability-ssm-expert-routing/">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "BIBO Stability of State Space Models With Expert Routing", "description": "With a contractive shared transition (norm of A at most rho < 1) and bounded mixed streams, Swimba's state and output stay bounded under any routing.", "about": "Stability of expert switching in recurrences", "url": "https://zhixudu.github.io/projects/swimba/bibo-stability-ssm-expert-routing/", "dateModified": "2026-11-10", "author": [{"@type": "Person", "name": "Zhixu Du"}, {"@type": "Person", "name": "Krishna Teja Chitty-Venkata"}, {"@type": "Person", "name": "Murali Emani"}, {"@type": "Person", "name": "Venkatram Vishwanath"}, {"@type": "Person", "name": "Hai (Helen) Li"}, {"@type": "Person", "name": "Yiran Chen"}], "isBasedOn": {"@type": "ScholarlyArticle", "name": "Swimba: Switch Mamba Model Scales State Space Models", "url": "https://arxiv.org/abs/2603.06938"}}</script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=IBM+Plex+Sans:wght@500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+/* Layout: single reading column, publication list as ruled entries, venue as a small stamp. */
+:root{
+  --paper:#f7f6f2;--ink:#1b1d22;--muted:#5d6068;--rule:#dcdad3;--card:#ffffff;--accent:#1f4e79;
+  --serif:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#15171b;--ink:#e7e6e1;--muted:#a3a5ab;--rule:#2b2e34;--card:#1c1f24;--accent:#8fb8e0;color-scheme:dark}}
+:root[data-theme="dark"]{--paper:#15171b;--ink:#e7e6e1;--muted:#a3a5ab;--rule:#2b2e34;--card:#1c1f24;--accent:#8fb8e0;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.65 var(--serif)}
+main{max-width:44rem;margin:0 auto;padding-inline:1.25rem;padding-block:2.5rem 4rem}
+a{color:var(--accent);text-underline-offset:2px}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1{font-size:1.85rem;line-height:1.25;margin:0;text-wrap:balance;font-weight:600}
+h2{font:600 .78rem var(--sans);text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin:2.4rem 0 .8rem;padding-top:.8rem;border-top:1px solid var(--rule)}
+h3{font:600 1rem var(--sans);margin:1.2rem 0 .2rem}
+p{max-width:65ch}
+.meta,.small{color:var(--muted);font-size:.92rem}
+.venue{display:inline-block;font:600 .74rem var(--sans);letter-spacing:.04em;color:var(--accent);border:1px solid currentColor;border-radius:3px;padding:.05rem .45rem}
+.links{display:flex;flex-wrap:wrap;gap:.3rem 1rem;font:500 .88rem var(--sans)}
+.head{display:grid;gap:.6rem;margin-bottom:.4rem}
+.pub{display:grid;gap:.3rem;padding-block:1.1rem;border-bottom:1px solid var(--rule)}
+.pub .t{font-weight:600;line-height:1.35}
+.pub .t a{color:var(--ink);text-decoration:none}
+.pub .t a:hover{color:var(--accent)}
+pre{background:var(--card);border:1px solid var(--rule);padding:1rem;overflow-x:auto;font:.78rem/1.5 var(--mono)}
+nav{display:flex;gap:1rem;font:500 .88rem var(--sans);margin-bottom:2rem}
+nav a{text-decoration:none}
+details{margin-top:2.4rem;padding-top:.8rem;border-top:1px solid var(--rule)}
+summary{cursor:pointer;font:600 .78rem var(--sans);text-transform:uppercase;letter-spacing:.09em;color:var(--muted)}
+summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.lede{font-size:1.08rem;color:var(--muted)}
+table{border-collapse:collapse;width:100%;font:.9rem/1.45 var(--sans)}
+.tw{overflow-x:auto}
+td,th{text-align:left;vertical-align:top;padding:.45rem .6rem .45rem 0;border-bottom:1px solid var(--rule)}
+th{font-weight:600;color:var(--muted)}
+td:first-child{font-variant-numeric:tabular-nums;white-space:nowrap;font-weight:600}
+ul.rel{padding-left:1.1rem}
+</style>
+</head>
+<body>
+<main>
+<nav><a href="https://zhixudu.github.io/">&larr; Zhixu Du</a><a href="https://zhixudu.github.io/projects/swimba/">Swimba paper page</a></nav>
+<div class="head"><div><span class="venue">NeurIPS 2026</span></div>
+<h1>BIBO Stability of State Space Models With Expert Routing</h1>
+<p class="lede">Is a state space model with input-dependent expert routing BIBO stable?</p></div>
+<h2>Answer</h2>
+<p>Yes, under conditions on the shared transition and the mixed streams. In Swimba (Du et al., 2026), Theorem 3 states that if the transition satisfies ||A|| ≤ ρ &lt; 1 in an induced matrix norm, and the mixed injection U_t = Σ π_{t,e} B^(e)_t X^(e)_t and mixed readout C_t = Σ π_{t,e} C^(e)_t are bounded for all t by constants U and C, then for any initial state h_0 the state satisfies ||h_t|| ≤ ρ^t ||h_0|| + (1 - ρ^t)/(1 - ρ) · U, and the output satisfies ||Y_t|| ≤ C times the same bound.</p><p>The proof unrolls the recursion, h_t = A^t h_0 + Σ A^(t-i) U_i, and applies submultiplicativity of the norm and the geometric series. The bound reflects standard SSM behavior: a stable transition forgets the distant past at a geometric rate. Token-wise expert switching can affect the state only through the injected term U_t, so bounding that term is sufficient to rule out state blow-up regardless of how often routing changes between experts.</p><p>This holds because of a design choice. In Swimba the transition A is shared across experts and time, and expert diversity enters only through the injection and readout streams B, C and X. With an expert-specific or routed transition, stability would depend on products of different transition matrices, which this theorem does not cover. The paper frames the concern as whether rapid expert switching can destabilize the dynamics, and the answer under these assumptions is that it cannot.</p><p>The theorem gives a sufficient condition, not a training procedure; the paper does not report empirical measurements of state norms in the trained Swimba-14B model.</p>
+<h2>Key numbers</h2>
+<div class="tw"><table><thead><tr><th>Value</th><th>Meaning</th><th>Where in the paper</th></tr></thead><tbody><tr><td>ρ &lt; 1</td><td>Contraction condition on the shared transition A</td><td>Theorem 3</td></tr><tr><td>ρ^t ||h_0|| + (1 - ρ^t)/(1 - ρ) · U</td><td>Bound on the state norm at step t</td><td>Theorem 3</td></tr></tbody></table></div>
+<h2>Setup</h2>
+<p>Theoretical analysis of a selective SSM h_t = A h_{t-1} + B_t X_t, Y_t = C_t^T h_t with state size N, P channels, E experts, softmax routing probabilities and a dense or top-k active set; proofs are in Appendix A of the paper. The architecture is instantiated on Mamba-2 and evaluated as Swimba-14B (4 experts, top-1) built on Nemotron-H-8B.</p>
+<p class="small">The stability bound assumes a contractive transition shared across experts and bounded mixed streams; it is a theoretical guarantee without accompanying empirical stability measurements.</p>
+<h2>Source</h2>
+<p><a href="https://zhixudu.github.io/projects/swimba/">Swimba: Switch Mamba Model Scales State Space Models</a>. Zhixu Du, Krishna Teja Chitty-Venkata, Murali Emani, Venkatram Vishwanath, Hai (Helen) Li, Yiran Chen. Advances in Neural Information Processing Systems 39 (NeurIPS 2026), 2026. Evidence: Section 3.4 Theorem 3, Appendix A.3.</p>
+<div class="links"><a href="https://arxiv.org/abs/2603.06938">arXiv</a> <a href="https://arxiv.org/pdf/2603.06938">PDF</a> <a href="https://zhixudu.github.io/projects/swimba/citation.bib">BibTeX</a></div>
+<h2>Related questions</h2><ul class="rel"><li><a href="https://zhixudu.github.io/projects/swimba/moe-routing-mamba2-ssd-kernel-compatibility/">MoE Routing Compatible With the Mamba-2 SSD Kernel</a></li><li><a href="https://zhixudu.github.io/projects/swimba/parameter-mixing-vs-output-mixing-linear-recurrence/">When Parameter Mixing Equals Output Mixing in Linear Recurrences</a></li><li><a href="https://zhixudu.github.io/projects/swimba/which-mamba-parameters-to-route-with-experts/">Which Mamba Parameters to Route: Transition vs B and C</a></li></ul>
+<details><summary>Citation (BibTeX)</summary>
+<pre>@inproceedings{du2026swimba,
+  title     = {Swimba: Switch Mamba Model Scales State Space Models},
+  author    = {Du, Zhixu and Chitty-Venkata, Krishna Teja and Emani, Murali and Vishwanath, Venkatram and Li, Hai and Chen, Yiran},
+  booktitle = {Advances in Neural Information Processing Systems 39 (NeurIPS 2026)},
+  year      = {2026},
+  url       = {https://arxiv.org/abs/2603.06938}
+}
+</pre>
+</details>
+
+</main>
+</body>
+</html>

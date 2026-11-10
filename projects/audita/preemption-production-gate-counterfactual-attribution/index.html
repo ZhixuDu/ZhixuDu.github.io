@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Handling Preemption in Counterfactual Blame Attribution | AUDITA</title>
+<meta name="description" content="Retire commands whose committed effect never reached the outcome before computing counterfactuals; this production gate resolves preemption.">
+<link rel="canonical" href="https://zhixudu.github.io/projects/audita/preemption-production-gate-counterfactual-attribution/">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "Handling Preemption in Counterfactual Blame Attribution", "description": "Retire commands whose committed effect never reached the outcome before computing counterfactuals; this production gate resolves preemption.", "about": "Production gate before counterfactual grading", "url": "https://zhixudu.github.io/projects/audita/preemption-production-gate-counterfactual-attribution/", "dateModified": "2026-11-10", "author": [{"@type": "Person", "name": "Zhixu Du"}, {"@type": "Person", "name": "Yiran Chen"}], "isBasedOn": {"@type": "ScholarlyArticle", "name": "AUDITA: certified auditing and causal attribution of adverse outcomes in autonomous multi-agent systems", "url": "https://arxiv.org/abs/2608.22160"}}</script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=IBM+Plex+Sans:wght@500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+/* Layout: single reading column, publication list as ruled entries, venue as a small stamp. */
+:root{
+  --paper:#f7f6f2;--ink:#1b1d22;--muted:#5d6068;--rule:#dcdad3;--card:#ffffff;--accent:#1f4e79;
+  --serif:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#15171b;--ink:#e7e6e1;--muted:#a3a5ab;--rule:#2b2e34;--card:#1c1f24;--accent:#8fb8e0;color-scheme:dark}}
+:root[data-theme="dark"]{--paper:#15171b;--ink:#e7e6e1;--muted:#a3a5ab;--rule:#2b2e34;--card:#1c1f24;--accent:#8fb8e0;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.65 var(--serif)}
+main{max-width:44rem;margin:0 auto;padding-inline:1.25rem;padding-block:2.5rem 4rem}
+a{color:var(--accent);text-underline-offset:2px}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1{font-size:1.85rem;line-height:1.25;margin:0;text-wrap:balance;font-weight:600}
+h2{font:600 .78rem var(--sans);text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin:2.4rem 0 .8rem;padding-top:.8rem;border-top:1px solid var(--rule)}
+h3{font:600 1rem var(--sans);margin:1.2rem 0 .2rem}
+p{max-width:65ch}
+.meta,.small{color:var(--muted);font-size:.92rem}
+.venue{display:inline-block;font:600 .74rem var(--sans);letter-spacing:.04em;color:var(--accent);border:1px solid currentColor;border-radius:3px;padding:.05rem .45rem}
+.links{display:flex;flex-wrap:wrap;gap:.3rem 1rem;font:500 .88rem var(--sans)}
+.head{display:grid;gap:.6rem;margin-bottom:.4rem}
+.pub{display:grid;gap:.3rem;padding-block:1.1rem;border-bottom:1px solid var(--rule)}
+.pub .t{font-weight:600;line-height:1.35}
+.pub .t a{color:var(--ink);text-decoration:none}
+.pub .t a:hover{color:var(--accent)}
+pre{background:var(--card);border:1px solid var(--rule);padding:1rem;overflow-x:auto;font:.78rem/1.5 var(--mono)}
+nav{display:flex;gap:1rem;font:500 .88rem var(--sans);margin-bottom:2rem}
+nav a{text-decoration:none}
+details{margin-top:2.4rem;padding-top:.8rem;border-top:1px solid var(--rule)}
+summary{cursor:pointer;font:600 .78rem var(--sans);text-transform:uppercase;letter-spacing:.09em;color:var(--muted)}
+summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.lede{font-size:1.08rem;color:var(--muted)}
+table{border-collapse:collapse;width:100%;font:.9rem/1.45 var(--sans)}
+.tw{overflow-x:auto}
+td,th{text-align:left;vertical-align:top;padding:.45rem .6rem .45rem 0;border-bottom:1px solid var(--rule)}
+th{font-weight:600;color:var(--muted)}
+td:first-child{font-variant-numeric:tabular-nums;white-space:nowrap;font-weight:600}
+ul.rel{padding-left:1.1rem}
+</style>
+</head>
+<body>
+<main>
+<nav><a href="https://zhixudu.github.io/">&larr; Zhixu Du</a><a href="https://zhixudu.github.io/projects/audita/">AUDITA paper page</a></nav>
+<div class="head"><div><span class="venue">arXiv preprint 2026</span></div>
+<h1>Handling Preemption in Counterfactual Blame Attribution</h1>
+<p class="lede">How to handle preemption when doing counterfactual blame attribution over logs?</p></div>
+<h2>Answer</h2>
+<p>Separate causal production from counterfactual dependence. Before any counterfactual is computed, check whether each command&#x27;s committed effect was actually realised and propagated into the state that made the outcome true, and retire commands whose effect never arrived. AUDITA (Du and Chen, 2026) calls this the production gate. Its Proposition 2 states that a message with no intact production path to the outcome receives rho = 0 and an exoneration note, regardless of its content.</p><p>The gate relies on two message fields. Each message carries an effect predicate, the world- or work-state change its author commits to, and a citation set naming the messages it acts on. A production path is a citation path from a message to the actuation of the outcome whose every link verifies and whose every committed effect is confirmed by the recorded state changes. Gated-out messages never enter the structural causal model, so they cannot appear in any cause set. This follows the legal requirement of causation-in-fact and the philosophical distinction between dependence and production.</p><p>The gate also explains why two identical transcripts can need different attributions. In the inert-twin structure of CulpaBench, the transcript is bitwise identical to the redundancy structure, but the second command&#x27;s actuator was locked out. Under redundancy each command carries 1/2; under the inert twin the first carries 1 and the second carries 0, with a breach finding for a skipped review step. Every transcript-level method returns one verdict for both and is right on only one, while the certified engine separates them in all draws because the dispatcher&#x27;s citations record which proposal it acted on.</p><p>In Table 2 the method scores 0.000 on preemption and the inert twin. On the inert twin, single-site scoring and Shapley attribution both err at 0.667, and the anomaly detector errs at 1.000 on both structures. The ablations identify the gate as load-bearing on exactly these two structures.</p>
+<h2>Key numbers</h2>
+<div class="tw"><table><thead><tr><th>Value</th><th>Meaning</th><th>Where in the paper</th></tr></thead><tbody><tr><td>0.000 ± 0.000</td><td>error on preemption and inert twin with the gate</td><td>Table 2</td></tr><tr><td>0.667 ± 0.000</td><td>inert-twin error of single-site scoring and of Shapley attribution</td><td>Table 2</td></tr><tr><td>0.095 ± 0.000</td><td>preemption error of Shapley attribution</td><td>Table 2</td></tr><tr><td>1.000 ± 0.000</td><td>error of the anomaly detector on both structures</td><td>Table 2</td></tr></tbody></table></div>
+<h2>Setup</h2>
+<p>CulpaBench: over 1,000 incidents in a deterministic multi-robot facility simulator, with structures grounded in 42 public OSHA/NIOSH robot-accident records and ground truth computed by exact world re-execution and an analytic oracle that shares no code with the engine. Each structure is scored over 300 draws and three generation seeds. Baselines: three Who&amp;When LLM judge formats (all-at-once, step-wise, binary-search) on Qwen2.5-72B-Instruct, CAR / CausalFlow single-site scoring, Shapley-value attribution, and a statistical anomaly detector.</p>
+<p class="small">Shown on simulated CulpaBench preemption and inert-twin structures, where the record carries authored citations and committed effect predicates.</p>
+<h2>Source</h2>
+<p><a href="https://zhixudu.github.io/projects/audita/">AUDITA: certified auditing and causal attribution of adverse outcomes in autonomous multi-agent systems</a>. Zhixu Du, Yiran Chen. arXiv preprint 2026, 2026. Evidence: Methods (Gate); Proposition 2; Results: CulpaBench, Ablations; Supplementary Note S5.</p>
+<div class="links"><a href="https://arxiv.org/abs/2608.22160">arXiv</a> <a href="https://arxiv.org/pdf/2608.22160">PDF</a> <a href="https://zhixudu.github.io/projects/audita/citation.bib">BibTeX</a></div>
+<h2>Related questions</h2><ul class="rel"><li><a href="https://zhixudu.github.io/projects/audita/chockler-halpern-responsibility-multi-agent/">Computing Chockler-Halpern Responsibility for AI Agents</a></li><li><a href="https://zhixudu.github.io/projects/audita/benchmark-causal-responsibility-attribution-ground-truth/">Responsibility Attribution Benchmark with Planted Ground Truth</a></li><li><a href="https://zhixudu.github.io/projects/audita/tamper-evident-audit-log-llm-multi-agent/">Tamper-Evident Audit Logs for LLM Multi-Agent Systems</a></li></ul>
+<details><summary>Citation (BibTeX)</summary>
+<pre>@misc{du2026audita,
+  title         = {AUDITA: certified auditing and causal attribution of adverse outcomes in autonomous multi-agent systems},
+  author        = {Du, Zhixu and Chen, Yiran},
+  year          = {2026},
+  eprint        = {2608.22160},
+  archivePrefix = {arXiv},
+  url           = {https://arxiv.org/abs/2608.22160}
+}
+</pre>
+</details>
+
+</main>
+</body>
+</html>
